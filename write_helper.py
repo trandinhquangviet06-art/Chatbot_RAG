@@ -1,0 +1,22 @@
+﻿import pathlib
+
+CSS = """\
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+:root {
+    --apple-white: #FFFFFF;
+    --apple-soft: #FBFBFD;
+    --apple-gray-050: #F5F5F7;
+    --apple-ink: #1D1D1F;
+    --apple-muted: #86868B;
+    --apple-blue: #0071E3;
+    --apple-blue-deep: #0066CC;
+    --apple-border: #D2D2D7;
+    --shadow-soft: 0 6px 20px rgba(0,0,0,.08);
+    --shadow-card: 0 12px 32px rgba(0,0,0,.10);
+    --shadow-focus: 0 0 0 4px rgba(0,113,227,.14);
+    --font-sans: "SF Pro Display","SF Pro Text",Inter,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --font-mono: "SF Mono",Menlo,Monaco,monospace;
+}
+"""
+pathlib.Path('check_css.txt').write_text(CSS, encoding='utf-8')
+print("OK")
