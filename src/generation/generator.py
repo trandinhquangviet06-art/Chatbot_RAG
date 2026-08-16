@@ -12,7 +12,7 @@ if not GOOGLE_API_KEY:
     raise ValueError("khong thay API KEY")
 
 # Resolve persist_directory relative to project root regardless of cwd
-_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 
 def _resolve_db_path(persist_directory: str) -> str:
