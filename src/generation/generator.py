@@ -63,7 +63,14 @@ def answer_query(query: str, persist_directory: str = "data/vector_store/finance
 
     try:
         for chunk in llm.stream(final_prompt):
-            yield chunk.content
+            content = chunk.content
+            # Các phiên bản LangChain mới có thể trả về list thay vì str
+            if isinstance(content, list):
+                content = "".join(
+                    part.get("text", "") if isinstance(part, dict) else str(part)
+                    for part in content
+                )
+            yield content
     except Exception as e:
         yield f"\n\n⚠️ Lỗi khi gọi mô hình: {e}"
 
