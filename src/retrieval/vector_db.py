@@ -1,35 +1,53 @@
+#FILE NAY CHAY TREN KAGGLE
 import os
 import json
-from langchain_core.documents import Document
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-def build_vector_db(input_json: str, persist_directory: str):
-    embeddings_model= HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    docs=[]
-    with open(input_json, "r", encoding="utf-8") as f:
-        chunked_data= json.load(f)
- # chuyen sang dang Document chuan langchain       
-    for item in chunked_data:
-        doc= Document(
-            page_content=item["text"],
-            metadata=item["metadata"]
-            )
-        docs.append(doc)
-    print("start Embedding.....")
-#tao dirt neu chx co
-    os.makedirs(persist_directory, exist_ok=True)
-    vector_store= Chroma.from_documents(
-        documents= docs,
-        embedding= embeddings_model,
-        persist_directory= persist_directory
-    )
-    print("successful")
-if __name__=="__main__":
-    input_json="data/processed/chunked_data.jsonl"
-    persist_directory="data/vector_store/finance_db"
-    try:
-        build_vector_db(input_json, persist_directory)
-    except Exception as e:
-        print(f"loi: {e}")
+from langchain_core.documents import Document
 
-            
+persist_directory = "finance_db"
+input_path = "/kaggle/input/datasets/quangvietdz/chunked-data/chunked_data.jsonl"
+
+print("Đang tải mô hình Embedding...")
+embedding_model = HuggingFaceEmbeddings(
+    model_name="BAAI/bge-m3",
+    model_kwargs={"device": "cuda"},
+    encode_kwargs={"batch_size": 32}
+)
+
+docs = []
+print("Đang đọc dữ liệu từ file...")
+
+with open(input_path, "r", encoding="utf-8") as f:
+    documents = json.load(f)
+
+for doc in documents:
+    tai_lieu = Document(
+        page_content=doc["Text"],
+        metadata=doc["Metadata"]
+    )
+    docs.append(tai_lieu)
+
+print(f"=> Hoàn tất! Tổng số chunks cần nhúng: {len(docs)}")
+
+print("\nBẮT ĐẦU QUÁ TRÌNH EMBEDDING:")
+os.makedirs(persist_directory, exist_ok=True)
+
+step = 5000
+vector_store = None
+
+for i in range(0, len(docs), step):
+    batch = docs[i : i + step]
+    
+    if i == 0:
+        vector_store = FAISS.from_documents(
+            documents=batch,
+            embedding=embedding_model
+        )
+    else:
+        vector_store.add_documents(batch)
+        
+    print(f"  -> Đã lưu xong mẻ từ chunk {i} đến {i + len(batch)}")
+
+vector_store.save_local(persist_directory)
+print(f"\n🎉 HOÀN TẤT! Đã lưu thành công toàn bộ Vector DB tại thư mục: {persist_directory}")

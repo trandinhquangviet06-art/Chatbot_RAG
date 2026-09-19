@@ -1,7 +1,97 @@
-venv/
-.env
-*.env
+# ============================================================
+#  Python
+# ============================================================
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
 
+#  Virtual Environments
+venv/
+venv312/
+.venv/
+env/
+ENV/
+.env.bak
+
+#  Environment & Secrets  ← QUAN TRỌNG: không push API key!
+.env
+.env.*
+!.env.example
+secrets.json
+config_local.py
+
+#  Data – raw / processed / vector store
+data/raw_data/
+data/processed/
+data/vector_store/
+*.jsonl
+*.csv
+*.parquet
+*.xlsx
+*.xls
+*.db
+*.sqlite
+*.sqlite3
+
+#  Models & Checkpoints  ← thường rất nặng (GB)
+models/
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.gguf
+*.onnx
+
+#  Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+*.ipynb
+
+
+#  Logs & Kết quả thực nghiệm
+logs/
+*.log
+experiments/results/
+experiments/outputs/
+evaluation/results/
+runs/
+wandb/
+mlruns/
+*.tfevents.*
+#  IDE / Editor
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+#  Temp / Cache
+*.tmp
+*.bak
+*.orig
+.cache/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+#  Misc files trong project này
+check_css.txt
+write_helper.py
+zip_for_colab.ps1
+data_test.jsonl
+requirements_local.txt
+requirements_local_no_llama.txt

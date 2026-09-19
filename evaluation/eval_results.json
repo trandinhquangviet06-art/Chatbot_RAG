@@ -1,0 +1,474 @@
+{
+  "summary": {
+    "total_questions": 8,
+    "avg_accuracy": 0.25,
+    "avg_faithfulness": 0.656,
+    "avg_context_precision": 0.475
+  },
+  "details": [
+    {
+      "question": "What is the FY2018 capital expenditure amount (in USD millions) for 3M? Give a response to the question by relying on the details shown in the cash flow statement.",
+      "truth_answer": "$1577.00",
+      "rag_answer": "Chào bạn, với tư cách là chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về chi phí đầu tư (CapEx) của 3M trong năm tài chính 2018 như sau:\n\nDựa trên **Báo cáo lưu chuyển tiền tệ hợp nhất (Consolidated Statement of Cash Flows)** trong báo cáo thường niên năm 2018 của 3M (**3M_2018_10K.pdf**, trang 60), mục \"Purchases of property, plant and equipment (PP&E)\" ghi nhận con số là **1.577 triệu USD**.\n\nĐây là khoản chi phí đầu tư cơ bản mà công ty đã thực hiện trong năm 2018 để duy trì và mở rộng năng lực sản xuất, phù hợp với chiến lược đầu tư vào các chương trình đổi mới và bảo trì hạ tầng của tập đoàn.\n\nNếu bạn cần so sánh con số này với các năm tài chính khác hoặc cần phân tích thêm về hiệu quả của khoản đầu tư này, tôi rất sẵn lòng hỗ trợ.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI\n\nĐúng câu trả lời RAG có sự sai sót về chi phí đầu tư thực tế. Câu trả lời chuẩn cho biết rằng năm 2018, 3M đã chi 1.577 triệu USD cho mục \"Purchases of property, plant and equipment (PP&E)\" trong báo cáo lưu chuyển tiền tệ hợp nhất của họ. Trong khi đó, câu trả lời RAG chỉ đưa ra con số 1.577 triệu USD mà không rõ ràng đó là tổng cộng trong năm hoặc chỉ chi phí một phần."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "supported": 1,
+        "total": 1,
+        "reason": "The claim \"The Company expects 2019 capital spending to be approximately $1.7 billion to $1.9 billion as 3M continues to invest in its businesses\" is supported by the TÀI LIỆU CONTEXT provided, which states \"The Company expects 2019 capital spending to be approximately $1.7 billion to $1.9 billion as 3M continues to invest in its businesses.\""
+      },
+      "context_precision": {
+        "score": 0.6,
+        "relevant": 3,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2018_10K.pdf",
+            "page": 47,
+            "relevant": true,
+            "verdict": "CÓ\nThe text states that 3M expects capital spending in 2019 to be approximately $1.7 billion to $1.9"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2018_10K.pdf",
+            "page": 60,
+            "relevant": true,
+            "verdict": "CÓ.\nĐoạn văn mô tả dữ liệu về hoạt động tiền mặt cho 3M, bao gồm khoản đầu tư trung ương năm 2018 (i"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2016_10K.pdf",
+            "page": 46,
+            "relevant": false,
+            "verdict": "KHÔNG\nLý do: Đoạn văn chỉ cung cấp thông tin về mua sắm tài sản cố định (PP&E) mà không cung cấp thô"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2018_10K.pdf",
+            "page": 83,
+            "relevant": false,
+            "verdict": "KHÔNG\nĐoạn văn không liên quan đến câu hỏi vì nó chỉ đề cập đến khoản tiền nợ và các chi phí liên qu"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2018_10K.pdf",
+            "page": 14,
+            "relevant": true,
+            "verdict": "CÓ.\n\nĐoạn văn bản liên quan đến câu hỏi vì nó cung cấp số liệu chi tiêu chính sách cho năm 2018 của "
+          }
+        ]
+      }
+    },
+    {
+      "question": "Assume that you are a public equities analyst. Answer the following question by primarily using information that is shown in the balance sheet: what is the year end FY2018 net PPNE for 3M? Answer in USD billions.",
+      "truth_answer": "$8.70",
+      "rag_answer": "Chào bạn, với tư cách là một chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về giá trị tài sản cố định ròng (Net PP&E) của 3M vào cuối năm tài chính 2018 như sau:\n\nDựa trên **Bảng cân đối kế toán hợp nhất (Consolidated Balance Sheet)** trong báo cáo thường niên năm 2018 của 3M (**3M_2018_10K.pdf**, trang 58), giá trị tài sản cố định ròng (Property, plant and equipment — net) tại thời điểm ngày 31 tháng 12 năm 2018 là **8,738 tỷ USD**.\n\nCon số này được xác định trực tiếp từ bảng cân đối kế toán bằng cách lấy tổng nguyên giá tài sản cố định (24,873 tỷ USD) trừ đi khấu hao lũy kế (16,135 tỷ USD).\n\nNếu bạn cần thêm bất kỳ phân tích nào khác về các chỉ số tài chính từ báo cáo này, tôi rất sẵn lòng hỗ trợ.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "supported": 1,
+        "total": 1,
+        "reason": "The claim \"The year end FY2018 net PPNE for 3M is 8,738 billion USD\" is directly supported by the information provided in the balance sheet, specifically Table 25 at page 58 of the 3M_2018_10K.pdf."
+      },
+      "context_precision": {
+        "score": 0.4,
+        "relevant": 2,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2018_10K.pdf",
+            "page": 127,
+            "relevant": false,
+            "verdict": "KHÔNG\nRational: Đoạn văn chỉ cung cấp thông tin về Net Sales (doanh số) của 3M tại Mỹ năm 2018 và 20"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2018_10K.pdf",
+            "page": 44,
+            "relevant": true,
+            "verdict": "CÓ. Dựa trên thông tin từ bảng Tài chính cuối năm 2018 (trang 44), \"Cash, Cash Equivalents and Marke"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2022_10K.pdf",
+            "page": 38,
+            "relevant": false,
+            "verdict": "KHÔNG, đoạn văn không liên quan đến câu hỏi."
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2018_10K.pdf",
+            "page": 14,
+            "relevant": true,
+            "verdict": "KHÔNG.\nTrong đoạn văn, không có thông tin về PPNE (Profit Before Tax and Other Non-Operating Expense"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2018_10K.pdf",
+            "page": 58,
+            "relevant": false,
+            "verdict": "KHÔNG, đoạn văn không liên quan đến câu hỏi."
+          }
+        ]
+      }
+    },
+    {
+      "question": "Is 3M a capital-intensive business based on FY2022 data?",
+      "truth_answer": "No, the company is managing its CAPEX and Fixed Assets pretty efficiently, which is evident from below key metrics:\nCAPEX/Revenue Ratio: 5.1%\nFixed assets/Total Assets: 20%\nReturn on Assets= 12.4%",
+      "rag_answer": "Chào bạn, với tư cách là một chuyên gia phân tích tài chính, tôi xin đánh giá mức độ thâm dụng vốn của 3M dựa trên dữ liệu tài chính năm 2022 như sau:\n\nĐể xác định 3M có phải là doanh nghiệp thâm dụng vốn (capital-intensive) hay không, chúng ta cần xem xét **Tỷ lệ thâm dụng vốn (Capital Intensity Ratio)** và **Vòng quay tài sản (Asset Turnover Ratio)**.\n\n### 1. Các chỉ số tài chính năm 2022\nDựa trên báo cáo **3M_2022_10K.pdf**:\n*   **Doanh thu thuần (Net sales):** 34,229 tỷ USD (trang 44).\n*   **Chi phí đầu tư cơ bản (Purchases of PP&E):** 1,749 tỷ USD (trang 39).\n*   **Tổng tài sản (Total Assets):** 47,621 tỷ USD (trang 58).\n\n### 2. Phân tích chỉ số\n*   **Tỷ lệ thâm dụng vốn (CapEx / Doanh thu):**\n    *   1,749 tỷ USD / 34,229 tỷ USD ≈ **5,1%**.\n    *   *Đánh giá:* Thông thường, các ngành thâm dụng vốn cao (như viễn thông hoặc tiện ích) thường có tỷ lệ này trên 10–15%. Với mức 5,1%, 3M không được coi là doanh nghiệp thâm dụng vốn cao theo định nghĩa tài chính thuần túy. Công ty tạo ra dòng tiền tự do mạnh mẽ mà không cần tái đầu tư quá lớn vào tài sản cố định.\n*   **Vòng quay tài sản (Doanh thu / Tổng tài sản):**\n    *   34,229 tỷ USD / 47,621 tỷ USD ≈ **0,72**.\n    *   *Đánh giá:* Chỉ số dưới 1.0 cho thấy 3M cần một nền tảng tài sản lớn (nhà máy, thiết bị, cơ sở R&D) để tạo ra doanh thu. Điều này phản ánh đặc thù của một tập đoàn công nghiệp sản xuất đa ngành.\n\n### 3. Kết luận chuyên môn\nDựa trên dữ liệu năm 2022, 3M có thể được mô tả như sau:\n\n*   **Về mặt tài chính:** 3M **không phải là doanh nghiệp thâm dụng vốn cao**. Tỷ lệ CapEx/Doanh thu thấp cho thấy khả năng quản lý vốn hiệu quả và khả năng tạo dòng tiền tốt.\n*   **Về mặt vận hành:** 3M là một doanh nghiệp **\"nặng về tài sản\" (asset-heavy)**. Với hàng trăm cơ sở sản xuất trên toàn cầu và nhu cầu duy trì hạ tầng vật chất để phục vụ hoạt động R&D và sản xuất, 3M đòi hỏi một khoản đầu tư cố định lớn và bền vững để duy trì lợi thế cạnh tranh.\n\n**Tóm lại:** 3M là một nhà sản xuất công nghiệp trưởng thành. Công ty không cần liên tục đổ một lượng vốn khổng lồ vào hạ tầng để tăng trưởng (như các ngành tiện ích), nhưng vẫn cần duy trì một nền tảng tài sản vật chất đáng kể để vận hành mô hình kinh doanh cốt lõi của mình.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI.\n\nĐiều này sai vì câu trả lời RAG chỉ chỉ ra tỷ lệ thâm dụng vốn (CAPEX/Revenue Ratio) và tỷ lệ tài sản cố định (Fixed assets/Total Assets) của 3M, nhưng không có thông tin về Return on Assets (ROA). ROA là một chỉ số quan trọng khác để đánh giá hiệu quả quản lý tài chính của một doanh nghiệp, do đó câu trả lời chuẩn cũng cần đưa ra ROA."
+      },
+      "faithfulness": {
+        "score": 0.75,
+        "supported": 3,
+        "total": 4,
+        "reason": "The claims about \"Tỷ lệ thâm dụng vốn (Capital Intensity Ratio)\" and \"Vòng quay tài sản (Asset Turnover Ratio)\" are supported by the data provided in the 3M_2022_10K.pdf file."
+      },
+      "context_precision": {
+        "score": 0.6,
+        "relevant": 3,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 70,
+            "relevant": true,
+            "verdict": "KHÔNG, Lý do: Đoạn văn không liên quan đến việc xác định xem 3M là một doanh nghiệp có xu hướng đầu "
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2022_10K.pdf",
+            "page": 37,
+            "relevant": false,
+            "verdict": "KHÔNG. Đoạn văn không liên quan đến câu hỏi. Nó mô tả các yếu tố tài chính của 3M, nhưng không nói đ"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2022_10K.pdf",
+            "page": 39,
+            "relevant": true,
+            "verdict": "CÓ\nĐoạn văn chỉ bàn về việc 3M thu hút và sử dụng tài chính để trả lại công việc của họ, nhưng không"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2022_10K.pdf",
+            "page": 7,
+            "relevant": true,
+            "verdict": "CÓ\n\nĐây là thông tin liên quan đến câu hỏi vì đoạn văn đề cập đến các quy định pháp lý và các quy đị"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2022_10K.pdf",
+            "page": 61,
+            "relevant": false,
+            "verdict": "KHÔNG. Đoạn văn không liên quan đến câu hỏi."
+          }
+        ]
+      }
+    },
+    {
+      "question": "What drove operating margin change as of FY2022 for 3M? If operating margin is not a useful metric for a company like this, then please state that and explain why.",
+      "truth_answer": "Operating Margin for 3M in FY2022 has decreased by 1.7% primarily due to: \n-Decrease in gross Margin\n-mostly one-off charges including Combat Arms Earplugs litigation, impairment related to exiting PFAS manufacturing, costs related to exiting Russia and divestiture-related restructuring\ncharges",
+      "rag_answer": "Chào bạn, với tư cách là chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về các yếu tố tác động đến biên lợi nhuận hoạt động (operating margin) của 3M trong năm tài chính 2022 như sau:\n\n### 1. Các yếu tố thúc đẩy sự thay đổi biên lợi nhuận năm 2022\nDựa trên **Báo cáo thường niên 2022 (3M_2022_10K.pdf, trang 20)**, biên lợi nhuận hoạt động của 3M đã giảm từ **20,8% (năm 2021)** xuống **19,1% (năm 2022)**. Sự thay đổi này chịu tác động bởi các yếu tố chính sau:\n\n*   **Chi phí nguyên vật liệu (Raw material impact):** Đây là yếu tố tiêu cực lớn nhất, làm giảm biên lợi nhuận **2,4%**. Áp lực lạm phát toàn cầu đã đẩy chi phí đầu vào tăng cao.\n*   **Các khoản chi phí đặc biệt (Special items):** Tổng các khoản mục đặc biệt (bao gồm chi phí kiện tụng, chi phí rút lui khỏi mảng sản xuất PFAS, chi phí tái cấu trúc và chi phí rút khỏi thị trường Nga) đã làm giảm biên lợi nhuận đáng kể. Cụ thể:\n    *   Chi phí cho các vụ kiện tụng quan trọng tác động tiêu cực **6,7%**.\n    *   Chi phí rút lui khỏi sản xuất PFAS tác động **2,4%**.\n    *   Chi phí rút khỏi thị trường Nga tác động **0,3%**.\n*   **Lợi nhuận từ thoái vốn (Gain on business divestitures):** Ngược lại, 3M ghi nhận khoản lợi nhuận từ việc thoái vốn kinh doanh, đóng góp tích cực **8,0%** vào biên lợi nhuận, giúp bù đắp một phần các chi phí nêu trên.\n*   **Tăng trưởng hữu cơ và năng suất (Organic growth/productivity):** Các nỗ lực cải thiện năng suất và tăng trưởng hữu cơ đã đóng góp tích cực **1,0%** vào biên lợi nhuận.\n\n### 2. Biên lợi nhuận hoạt động có phải là chỉ số hữu ích cho 3M?\n**Có, biên lợi nhuận hoạt động vẫn là một chỉ số cực kỳ hữu ích**, nhưng cần được diễn giải một cách thận trọng đối với một tập đoàn như 3M:\n\n*   **Tại sao nó hữu ích:**\n    *   **Đo lường hiệu quả cốt lõi:** Nó phản ánh khả năng quản lý chi phí giá vốn hàng bán (COGS) và chi phí bán hàng, quản lý doanh nghiệp (SG&A). Đối với một công ty sản xuất đa ngành, đây là thước đo quan trọng nhất để đánh giá xem mô hình kinh doanh cốt lõi có đang vận hành hiệu quả hay không.\n    *   **Đánh giá khả năng tạo vốn:** Biên lợi nhuận cho biết công ty có đủ \"đệm\" tài chính để duy trì ngân sách R&D khổng lồ và chi trả cổ tức hay không.\n\n*   **Tại sao cần thận trọng (Những hạn chế):**\n    *   **Sự nhiễu loạn từ các khoản chi phí bất thường:** Như dữ liệu năm 2022 cho thấy, các khoản chi phí pháp lý (PFAS, tai nghe Combat Arms) và chi phí tái cấu trúc danh mục đầu tư làm biên lợi nhuận GAAP bị \"nhiễu\". Nó không phản ánh đúng hiệu suất vận hành thực tế của các đơn vị kinh doanh.\n    *   **Giải pháp cho nhà phân tích:** Để có cái nhìn chính xác, các nhà phân tích thường sử dụng **\"Biên lợi nhuận điều chỉnh\" (Adjusted Operating Margin)** – loại bỏ các tác động của chi phí kiện tụng, chi phí thoái vốn và các khoản mục đặc biệt để đánh giá sức khỏe thực sự của hoạt động sản xuất kinh doanh.\n\n**Kết luận:** Nếu chỉ nhìn vào biên lợi nhuận GAAP, bạn đang thấy tác động của các cuộc khủng hoảng pháp lý và tái cấu trúc. Để đánh giá hiệu quả vận hành thực sự, bạn cần xem xét biên lợi nhuận đã loại trừ các yếu tố đặc biệt này.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI\nThe RAG response does not directly address the question about the causes of the change in operating margin for 3M in FY2022. Instead, it provides additional information about 3M's 2021 operating margin and the reasons for the decrease, which is not relevant to the specific question asked."
+      },
+      "faithfulness": {
+        "score": 0.5,
+        "supported": 1,
+        "total": 2,
+        "reason": "The first claim is directly supported by the information in the provided context, while the second claim is supported by the context through the mention of benefits from strong pricing, spending discipline, and restructuring actions."
+      },
+      "context_precision": {
+        "score": 0.6,
+        "relevant": 3,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2022_10K.pdf",
+            "page": 21,
+            "relevant": true,
+            "verdict": "CÓ\nĐoạn văn này liên quan đến câu hỏi vì nó mô tả các yếu tố dẫn đến thay đổi trong lợi nhuận trên d"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2018_10K.pdf",
+            "page": 21,
+            "relevant": false,
+            "verdict": "KHÔNG. Đoạn văn không liên quan đến câu hỏi."
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2017_10K.pdf",
+            "page": 29,
+            "relevant": true,
+            "verdict": "CÓ, Đoạn văn liên quan đến câu hỏi vì nó cung cấp thông tin chi tiết về tỷ lệ lao động (operating in"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2022_10K.pdf",
+            "page": 20,
+            "relevant": false,
+            "verdict": "KHÔNG\nRationale: The given text does not provide any information about how the operating margin chan"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2017_10K.pdf",
+            "page": 30,
+            "relevant": true,
+            "verdict": "CÓ.\nĐoạn văn liên quan đến câu hỏi vì nó cung cấp thông tin cụ thể về nguyên nhân dẫn đến sự thay đổ"
+          }
+        ]
+      }
+    },
+    {
+      "question": "If we exclude the impact of M&A, which segment has dragged down 3M's overall growth in 2022?",
+      "truth_answer": "The consumer segment shrunk by 0.9% organically.",
+      "rag_answer": "Chào bạn, với tư cách là chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về phân khúc gây áp lực lên tăng trưởng của 3M trong năm 2022 (loại trừ tác động của M&A) như sau:\n\nDựa trên dữ liệu từ các báo cáo tài chính, phân khúc **Consumer (Tiêu dùng)** chính là \"lực cản\" lớn nhất đối với tăng trưởng hữu cơ của 3M trong năm 2022.\n\n### Phân tích chi tiết:\n\n1.  **Sự suy giảm của phân khúc Consumer:**\n    *   Sau giai đoạn bùng nổ nhu cầu trong đại dịch (2020-2021) đối với các sản phẩm cải tạo nhà cửa và đồ dùng gia đình (như Scotch-Brite, Command, Post-it), phân khúc này đã đối mặt với sự sụt giảm mạnh về nhu cầu trong năm 2022.\n    *   Sự thay đổi trong hành vi người tiêu dùng (chuyển dịch từ chi tiêu cho hàng hóa sang dịch vụ) cùng với tình trạng các nhà bán lẻ lớn thực hiện **cắt giảm tồn kho (inventory destocking)** đã khiến tăng trưởng hữu cơ của phân khúc này rơi vào trạng thái âm trong nhiều quý liên tiếp.\n\n2.  **So sánh với các phân khúc khác:**\n    *   **Safety & Industrial:** Duy trì được sự ổn định nhờ nhu cầu cao đối với các sản phẩm công nghiệp, chất kết dính và thiết bị bảo hộ cá nhân.\n    *   **Transportation & Electronics:** Mặc dù gặp khó khăn do sự suy yếu của thị trường điện tử tiêu dùng (smartphone, máy tính bảng) và tình trạng thiếu hụt chất bán dẫn, nhưng phân khúc này vẫn nhận được sự hỗ trợ từ mảng ô tô (OEM) và hàng không vũ trụ.\n    *   **Health Care:** Theo **3M_2022_10K.pdf (trang 32)**, phân khúc này ghi nhận tăng trưởng hữu cơ đạt **3,2%** trong năm 2022, cho thấy khả năng chống chịu tốt hơn so với phân khúc Consumer nhờ nhu cầu ổn định trong các giải pháp y tế.\n\n### Kết luận:\nTrong khi các phân khúc khác vẫn duy trì được sự cân bằng hoặc tăng trưởng hữu cơ dương, **phân khúc Consumer** là đơn vị duy nhất liên tục ghi nhận kết quả tiêu cực về tăng trưởng hữu cơ trong năm 2022. Đây là hệ quả trực tiếp của việc điều chỉnh tồn kho tại các kênh bán lẻ và sự sụt giảm nhu cầu sau đại dịch đối với các sản phẩm tiêu dùng thiết yếu tại nhà.\n\nNếu bạn cần thêm dữ liệu chi tiết về tỷ lệ tăng trưởng hữu cơ cụ thể của từng phân khúc để so sánh, tôi rất sẵn lòng cung cấp thêm.",
+      "accuracy": {
+        "label": "ĐÚNG",
+        "score": 1.0,
+        "reason": "ĐÚNG\n\nGiải thích: Câu trả lời RAG đã đưa ra phân khúc Consumer (Tiêu dùng) là \"lực cản\" lớn nhất đối với tăng trưởng hữu cơ của 3M trong năm 2022, điều này hoàn toàn khớp với thông tin trong câu trả lời chuẩn."
+      },
+      "faithfulness": {
+        "score": 0.0,
+        "supported": 0,
+        "total": 3,
+        "reason": "None of the claims are supported by the given context."
+      },
+      "context_precision": {
+        "score": 0.4,
+        "relevant": 2,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2022_10K.pdf",
+            "page": 32,
+            "relevant": true,
+            "verdict": "KHÔNG\nTrong đoạn văn, không có thông tin cụ thể về segment nào đã \"drag down\" 3M's overall growth tr"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 68,
+            "relevant": false,
+            "verdict": "KHÔNG. Đoạn văn không liên quan đến câu hỏi vì nó chỉ cung cấp thông tin về hoạt động kinh doanh của"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 67,
+            "relevant": false,
+            "verdict": "KHÔNG\nĐoạn văn không liên quan đến câu hỏi."
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 67,
+            "relevant": false,
+            "verdict": "KHÔNG\nĐoạn văn chỉ đề cập đến các khoản giảm bán hàng của 3M trong quý 2/2023 và không đưa ra thông "
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2022_10K.pdf",
+            "page": 53,
+            "relevant": true,
+            "verdict": "CÓ\n\nĐoạn văn cung cấp thông tin về Aearo Entities, một số subsidiary của 3M. Việc deconsolidate Aear"
+          }
+        ]
+      }
+    },
+    {
+      "question": "Does 3M have a reasonably healthy liquidity profile based on its quick ratio for Q2 of FY2023? If the quick ratio is not relevant to measure liquidity, please state that and explain why.",
+      "truth_answer": "No. The quick ratio for 3M was 0.96 by Jun'23 close, which needs a bit of an improvement to touch the 1x mark",
+      "rag_answer": "Chào bạn, với tư cách là chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về hồ sơ thanh khoản của 3M trong quý 2 năm tài chính 2023 như sau:\n\n### 1. Tính toán chỉ số Quick Ratio (Quý 2/2023)\nChỉ số thanh toán nhanh (Quick Ratio) được tính bằng công thức:\n**Quick Ratio = (Tiền và tương đương tiền + Chứng khoán kinh doanh + Phải thu khách hàng) / Nợ ngắn hạn**\n\nDựa trên dữ liệu từ **3M_2023Q2_10Q.pdf** (trang 71 và các bảng cân đối kế toán liên quan):\n*   **Tiền và tương đương tiền + Chứng khoán:** 4,337 triệu USD.\n*   **Phải thu khách hàng (Accounts receivable):** 5,456 triệu USD.\n*   **Tổng tài sản nhanh (Quick Assets):** 4,337 + 5,456 = 9,793 triệu USD.\n*   **Nợ ngắn hạn (Current Liabilities):** 17,558 triệu USD.\n\n**Quick Ratio = 9,793 / 17,558 ≈ 0.56**\n\n### 2. Chỉ số Quick Ratio có phải là thước đo phù hợp cho 3M?\nMặc dù Quick Ratio là một chỉ số kế toán tiêu chuẩn, nhưng đối với một tập đoàn công nghiệp đa ngành như 3M, nó **chỉ mang tính tham khảo một phần** và không phản ánh đầy đủ sức khỏe thanh khoản vì các lý do sau:\n\n*   **Đặc thù ngành sản xuất:** 3M sở hữu lượng hàng tồn kho lớn và có tính thanh khoản cao. Việc loại bỏ hàng tồn kho khỏi công thức Quick Ratio làm cho chỉ số này trở nên quá thận trọng và không phản ánh đúng khả năng chuyển đổi tài sản thành tiền mặt của doanh nghiệp.\n*   **Khả năng tiếp cận thị trường vốn:** 3M là một tập đoàn lớn với xếp hạng tín nhiệm cao, có khả năng tiếp cận linh hoạt với thị trường thương phiếu (commercial paper) và các hạn mức tín dụng xoay vòng. Theo **3M_2023Q2_10Q.pdf (trang 70)**, công ty duy trì chương trình thương phiếu với hạn mức lên tới 5 tỷ USD, đây là công cụ quản lý thanh khoản ngắn hạn quan trọng hơn nhiều so với số dư tiền mặt tại một thời điểm.\n*   **Dòng tiền từ hoạt động kinh doanh:** 3M có khả năng tạo dòng tiền tự do (Free Cash Flow) mạnh mẽ. Thanh khoản của 3M được đảm bảo bởi dòng tiền vận hành liên tục thay vì chỉ dựa vào tài sản lưu động trên bảng cân đối kế toán.\n\n### 3. Đánh giá hồ sơ thanh khoản\nMặc dù chỉ số Quick Ratio (0.56) thấp hơn ngưỡng lý tưởng là 1.0, nhưng hồ sơ thanh khoản của 3M vẫn được coi là **khỏe mạnh và ổn định** vì:\n\n1.  **Dòng tiền mạnh:** Công ty liên tục tạo ra dòng tiền từ hoạt động kinh doanh để đáp ứng các nghĩa vụ nợ và chi trả cổ tức (theo **3M_2023Q2_10Q.pdf, trang 71**).\n2.  **Quản trị nợ chủ động:** 3M quản lý nợ thông qua việc kết hợp giữa tiền mặt sẵn có và phát hành thương phiếu, giúp tối ưu hóa chi phí vốn trong khi vẫn đảm bảo khả năng thanh toán các nghĩa vụ ngắn hạn.\n3.  **Tính linh hoạt:** Báo cáo tài chính khẳng định 3M duy trì hồ sơ thanh khoản mạnh mẽ nhờ sự ổn định của mô hình kinh doanh và khả năng tiếp cận thị trường vốn đã được kiểm chứng qua nhiều năm.\n\n**Kết luận:** Bạn không nên quá lo ngại về chỉ số Quick Ratio dưới 1.0 của 3M. Đối với một doanh nghiệp quy mô lớn như 3M, các chỉ số về **dòng tiền tự do (Free Cash Flow)** và **khả năng tiếp cận thị trường vốn** là những thước đo phản ánh chính xác hơn về sức khỏe thanh khoản thực tế.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI\n\nLý do: Câu trả lời RAG không chính xác vì:\n1. Trong câu trả lời RAG, chỉ số Quick Ratio được tính là 0.96, nhưng câu trả lời chuẩn nói 1.00. Điều này tạo ra sự nhầm lẫn về mức độ tốt của hồ sơ thanh khoản.\n2. Câu trả lời RAG không giải thích tại sao chỉ số Quick Ratio không thể là quan sát lý tưởng cho việc đánh giá liquidity.\n3. Câu trả lời RAG không cung cấp thông tin về n"
+      },
+      "faithfulness": {
+        "score": 0.5,
+        "supported": 1,
+        "total": 2,
+        "reason": "The quick ratio of 3M for Q2 of FY2023 is calculated correctly, and the information is supported by the provided context."
+      },
+      "context_precision": {
+        "score": 0.6,
+        "relevant": 3,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 70,
+            "relevant": false,
+            "verdict": "KHÔNG.\n\nR Lý do: Đoạn văn chủ yếu trích dẫn thông tin về tài chính và khả năng hoạt động của 3M, như"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2022_10K.pdf",
+            "page": 37,
+            "relevant": true,
+            "verdict": "KHÔNG.\nLý do: Đoạn văn chỉ chia sẻ về yếu tố tài chính và tài chính 3M, nhưng không cung cấp thông t"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2015_10K.pdf",
+            "page": 38,
+            "relevant": false,
+            "verdict": "KHÔNG. Đoạn văn này không liên quan đến câu hỏi vì nó chỉ trình bày thông tin về hoạt động tài chính"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 71,
+            "relevant": true,
+            "verdict": "CÓ\nMột số yếu tố trong đoạn văn liên quan đến câu hỏi:\n1. 3M đã có $4,3 billion của tiền mặt, tiền m"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2018_10K.pdf",
+            "page": 44,
+            "relevant": true,
+            "verdict": "CÓ\nLy do: Trong đoạn văn, tài chính của 3M cho thấy rằng họ sử dụng các biện pháp_working capital để"
+          }
+        ]
+      }
+    },
+    {
+      "question": "Which debt securities are registered to trade on a national securities exchange under 3M's name as of Q2 of 2023?",
+      "truth_answer": "Following debt securities registered under 3M's name are listed to trade on the New York Stock Exchange:\n-1.500% Notes due 2026 (Trading Symbol: MMM26)\n-1.750% Notes due 2030 (Trading Symbol: MMM30)\n-1.500% Notes due 2031 (Trading Symbol: MMM31)",
+      "rag_answer": "Chào bạn, với tư cách là một chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về các chứng khoán nợ của 3M được niêm yết trên sàn giao dịch chứng khoán quốc gia tính đến quý 2 năm 2023 như sau:\n\nTính đến hết quý 2 năm 2023, **3M Company không có bất kỳ chứng khoán nợ (debt securities) nào được đăng ký để giao dịch trên một sàn giao dịch chứng khoán quốc gia** (như NYSE hay Nasdaq).\n\nDưới đây là các điểm phân tích chuyên môn để làm rõ vấn đề này:\n\n1.  **Cấu trúc niêm yết:** Theo hồ sơ tài chính của 3M (đặc biệt là các báo cáo định kỳ gửi Ủy ban Chứng khoán và Giao dịch Hoa Kỳ - SEC), chứng khoán duy nhất của 3M được đăng ký theo Mục 12 của Đạo luật Giao dịch Chứng khoán năm 1934 để niêm yết trên Sở Giao dịch Chứng khoán New York (NYSE) là **Cổ phiếu phổ thông (Common Stock)** với mệnh giá 0,01 USD/cổ phiếu.\n2.  **Bản chất của nợ doanh nghiệp:** Mặc dù 3M có một lượng nợ lớn đang lưu hành (như được ghi nhận trong **3M_2023Q2_10Q.pdf, trang 19**, mục \"NOTE 10. Long-Term Debt and Short-Term Borrowings\"), các khoản nợ này thường được phát hành dưới dạng trái phiếu doanh nghiệp giao dịch qua quầy (OTC - Over-the-Counter). Các trái phiếu này chủ yếu được nắm giữ bởi các nhà đầu tư tổ chức và giao dịch trên thị trường thứ cấp thông qua các nhà môi giới, thay vì niêm yết trực tiếp trên các sàn giao dịch quốc gia.\n3.  **Cơ chế giao dịch:** Các khoản nợ của 3M thường được theo dõi thông qua hệ thống TRACE của FINRA (Financial Industry Regulatory Authority), đây không phải là một sàn giao dịch chứng khoán quốc gia.\n4.  **Thông tin bổ sung:** Trong báo cáo **3M_2023Q2_10Q.pdf (trang 19)**, công ty liệt kê chi tiết các khoản nợ ngắn hạn và dài hạn, bao gồm các khoản nợ đã đáo hạn và các hạn mức tín dụng xoay vòng (revolving credit facility) trị giá 4,25 tỷ USD. Tuy nhiên, không có khoản nào trong số này là chứng khoán nợ được đăng ký niêm yết trên sàn giao dịch.\n\n**Kết luận:** Nếu bạn đang tìm kiếm các công cụ nợ của 3M để đầu tư hoặc phân tích, bạn sẽ không tìm thấy chúng trên bảng điện tử của các sàn giao dịch chứng khoán quốc gia. Các thông tin chi tiết về nghĩa vụ nợ của 3M được công bố đầy đủ trong phần \"Notes to Consolidated Financial Statements\" tại các báo cáo 10-Q và 10-K của công ty.",
+      "accuracy": {
+        "label": "SAI",
+        "score": 0.0,
+        "reason": "SAI\n\nĐúng: Câu trả lời RAG không chính xác về các chứng khoán nợ của 3M được niêm yết trên sàn giao dịch chứng khoán quốc gia. Câu trả lời chuẩn cho biết rằng 3M không có bất kỳ chứng khoán nợ nào được niêm yết trên một sàn giao dịch chứng khoán quốc gia."
+      },
+      "faithfulness": {
+        "score": 0.5,
+        "supported": 1,
+        "total": 2,
+        "reason": "The claim that \"3M Company does not have any debt securities registered to trade on a national securities exchange\" is supported by the information provided in the context about cash, cash equivalents, and marketable securities, which are assets, not debt securities."
+      },
+      "context_precision": {
+        "score": 0.2,
+        "relevant": 1,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 71,
+            "relevant": false,
+            "verdict": "KHÔNG.\n\nLý do: Đoạn văn không liên quan trực tiếp đến câu hỏi. Đoạn văn mô tả các khoản nợ hàng tồn "
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2022_10K.pdf",
+            "page": 93,
+            "relevant": true,
+            "verdict": "KHÔNG\n\nR Lý do: Đoạn văn chỉ đề cập đến các trái phiếu thị trường ngắn hạn của 3M và các khoản vay c"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 73,
+            "relevant": false,
+            "verdict": "KHÔNG\nĐoạn văn chỉ mô tả các khoản đầu tư và đầu tư khác của 3M và không cung cấp thông tin chi tiết"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2023Q2_10Q.pdf",
+            "page": 19,
+            "relevant": false,
+            "verdict": "KHÔNG. Đang xem xét đoạn văn, nhưng không tìm thấy thông tin liên quan đến câu hỏi."
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2018_10K.pdf",
+            "page": 107,
+            "relevant": false,
+            "verdict": "KHÔNG\nCâu hỏi liên quan đến danh sách các chứng khoán tín dụng được đăng ký để giao dịch trên một th"
+          }
+        ]
+      }
+    },
+    {
+      "question": "Does 3M maintain a stable trend of dividend distribution?",
+      "truth_answer": "Yes, not only they distribute the dividends on a routine basis, 3M has also been increasing the per share dividend for consecutive 65 years",
+      "rag_answer": "Chào bạn, với tư cách là chuyên gia phân tích tài chính, tôi xin giải đáp câu hỏi của bạn về tính ổn định trong chính sách cổ tức của 3M dựa trên dữ liệu lịch sử và các thay đổi chiến lược gần đây:\n\n### 1. Bối cảnh lịch sử (Giai đoạn \"Dividend King\")\nTrong hơn 6 thập kỷ, 3M được coi là \"tiêu chuẩn vàng\" cho các nhà đầu tư thu nhập nhờ danh hiệu **\"Dividend King\"**.\n*   **Dữ liệu lịch sử:** Theo các báo cáo thường niên, 3M đã duy trì chuỗi tăng cổ tức liên tục trong hơn 60 năm. Ví dụ:\n    *   **Báo cáo 2015 (trang 19):** Ghi nhận năm thứ 58 liên tiếp tăng cổ tức.\n    *   **Báo cáo 2016 (trang 22):** Ghi nhận năm thứ 59 liên tiếp tăng cổ tức.\n    *   **Báo cáo 2018 (trang 26):** Ghi nhận năm thứ 61 liên tiếp tăng cổ tức.\n*   Trong giai đoạn này, 3M duy trì chính sách tăng cổ tức đều đặn hàng năm (thường ở mức 6-8%), phản ánh sự ổn định tuyệt đối của dòng tiền và cam kết mạnh mẽ đối với cổ đông.\n\n### 2. Bước ngoặt năm 2024: Tái cấu trúc và thay đổi chính sách\nVị thế \"Dividend King\" của 3M đã thay đổi đáng kể sau khi hoàn tất việc tách mảng chăm sóc sức khỏe thành công ty độc lập **Solventum (SOLV)** vào tháng 4/2024.\n\n*   **Cắt giảm cổ tức (Rebasing):** Sau khi tách mảng, ban lãnh đạo 3M đã thông báo \"tái thiết lập\" (rebase) mức chi trả cổ tức. Thay vì tăng trưởng liên tục, cổ tức hiện nay được xác định dựa trên khoảng **40% dòng tiền tự do (Free Cash Flow) điều chỉnh**.\n*   **Hệ quả:** Việc điều chỉnh này dẫn đến số tiền cổ tức trên mỗi cổ phiếu thấp hơn so với mức trước khi tách mảng. Do đó, 3M đã chính thức chấm dứt chuỗi tăng cổ tức liên tục, đồng nghĩa với việc mất danh hiệu \"Dividend King\".\n\n### 3. Đánh giá tính ổn định hiện tại\nMặc dù không còn là cổ phiếu \"tăng trưởng cổ tức\" (dividend growth) theo cách truyền thống, chính sách hiện tại của 3M hướng tới sự **bền vững (sustainability)**:\n\n*   **Tính ổn định ở mức mới:** Việc gắn cổ tức với tỷ lệ phần trăm dòng tiền tự do giúp 3M tạo ra một cấu trúc chi trả dự báo được, giảm thiểu rủi ro phải cắt giảm đột ngột trong tương lai do các biến động kinh tế hoặc chi phí pháp lý (như các vụ kiện PFAS).\n*   **Tình trạng hiện tại:** 3M hiện đang trong giai đoạn chuyển đổi chiến lược. Sự ổn định của cổ tức trong tương lai sẽ phụ thuộc vào khả năng quản lý các khoản nợ pháp lý và hiệu quả hoạt động của các mảng kinh doanh cốt lõi sau khi tái cấu trúc.\n\n**Kết luận chuyên môn:**\nNếu bạn tìm kiếm một doanh nghiệp có lịch sử **tăng trưởng cổ tức liên tục 60 năm**, 3M không còn phù hợp với tiêu chí đó. Tuy nhiên, nếu bạn tìm kiếm một doanh nghiệp đã **tái thiết lập mức chi trả về ngưỡng bền vững** để phù hợp với quy mô mới sau khi thoái vốn, thì 3M đang duy trì một chính sách cổ tức ổn định ở mặt bằng mới.\n\n***Khuyến nghị:** Vì chính sách cổ tức của 3M đã thay đổi về bản chất, bạn nên theo dõi các báo cáo quan hệ nhà đầu tư (Investor Relations) mới nhất để cập nhật về tỷ lệ chi trả (payout ratio) thực tế so với dòng tiền tự do của công ty.*",
+      "accuracy": {
+        "label": "ĐÚNG",
+        "score": 1.0,
+        "reason": "ĐÚNG\n\nRAG trả lời mô tả rõ lịch sử tăng cổ tức của 3M, cho thấy sự ổn định trong chính sách này. Trong khi câu trả lời chuẩn chỉ nói rằng 3M phân发 cổ tức thường xuyên và tăng, nhưng không xác định độ dài liên tục."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "supported": 2,
+        "total": 2,
+        "reason": "- Claim 1: \"3M maintains a stable trend of dividend distribution\" is supported by the information in the \"Financial Condition\" section of the TÀI LIỆU CONTEXT, which states that 3M generated $6.4 billion of operating cash flow in 2018, an increase of $199 million compared to 2017. This indicates a stable financial situation, which can support a stable dividend distribution."
+      },
+      "context_precision": {
+        "score": 0.4,
+        "relevant": 2,
+        "total": 5,
+        "details": [
+          {
+            "chunk": 1,
+            "source": "3M_2018_10K.pdf",
+            "page": 26,
+            "relevant": false,
+            "verdict": "KHÔNG\n\nĐoạn văn không liên quan đến câu hỏi \"Do 3M maintain a stable trend of dividend distribution?"
+          },
+          {
+            "chunk": 2,
+            "source": "3M_2016_10K.pdf",
+            "page": 22,
+            "relevant": true,
+            "verdict": "KHÔNG. Đoạn văn chỉ nói về các hoạt động về mua sắm cổ phiếu của công ty mà không có thông tin về vi"
+          },
+          {
+            "chunk": 3,
+            "source": "3M_2015_10K.pdf",
+            "page": 38,
+            "relevant": false,
+            "verdict": "KHÔNG\nVì đoạn văn chỉ mô tả quy trình và mục tiêu của 3M mà không cung cấp thông tin về việc duy trì"
+          },
+          {
+            "chunk": 4,
+            "source": "3M_2016_10K.pdf",
+            "page": 41,
+            "relevant": false,
+            "verdict": "KHÔNG\nĐoạn văn không liên quan đến câu hỏi \"Does 3M maintain a stable trend of dividend distribution"
+          },
+          {
+            "chunk": 5,
+            "source": "3M_2015_10K.pdf",
+            "page": 19,
+            "relevant": true,
+            "verdict": "KHÔNG, Lý do: Đoạn văn chỉ đề cập đến việc 3M mua cổ phiếu của mình trong những năm gần đây, nhưng k"
+          }
+        ]
+      }
+    }
+  ]
+}

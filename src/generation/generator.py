@@ -1,18 +1,78 @@
 import os
 import sys
-from langchain_chroma import Chroma
+import functools
+import pickle
+from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
-
-load_dotenv()
-GOOGLE_API_KEY =os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    raise ValueError("khong thay API KEY")
-
-# Resolve persist_directory relative to project root regardless of cwd
+import json
+#re_rank
+from langchain_classic.retrievers import ContextualCompressionRetriever
+from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from memory_manager import Memory
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain_core.documents import Document
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+env_path=os.path.join(_PROJECT_ROOT,".env")
+load_dotenv(dotenv_path=env_path)
+api_key= os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("khong tim thay api key trong file .env")
+@functools.lru_cache(maxsize=1)
+def get_resource(persist_directory: str):
+    """chi loa cac model llm, embedding hay rerank 1 lan thoi chu lan nao chayj cx load lai -> lau+ ton ram"""
+    print("load cac model......")
+    embedding_model= HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
+    abs_db_path= _resolve_db_path(persist_directory)
+    vector_store= FAISS.load_local(
+        folder_path= abs_db_path,
+        embeddings= embedding_model,
+        allow_dangerous_deserialization= True
+
+    )
+    vector_search= vector_store.as_retriever(search_kwargs={"k": 20})
+    chunkeddata_path= os.path.join(_PROJECT_ROOT, "data/processed/chunked_data.jsonl")
+    bm25_path= os.path.join(persist_directory, "bm25_index.pkl")
+    if os.path.exists(bm25_path):
+        with open(bm25_path, "rb") as f:
+            bm25_retriever= pickle.load(f)
+    else:
+        with open(chunkeddata_path, "r", encoding="utf-8") as f:
+            documents= json.load(f)
+        docs= []
+        for doc in documents:
+            tai_lieu= Document(
+                page_content= doc["Text"],
+                metadata= doc["Metadata"]
+            )
+            docs.append(tai_lieu)
+        bm25_retriever= BM25Retriever.from_documents(docs)
+        bm25_retriever.k= 20
+        with open(bm25_path, "wb") as f:
+            pickle.dump(bm25_retriever, f)
+    ensemble_retriever= EnsembleRetriever(
+        retrievers= [bm25_retriever, vector_search],
+        weights=[0.6, 0.4]
+    )
+
+    print("rerank.....")
+    cross_encoder_model= HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3")
+    # top_n=8 để giữ nhiều chunk hơn, tăng cơ hội có đủ số liệu cho tính toán
+    base_compressor= CrossEncoderReranker(model= cross_encoder_model, top_n=8)
+    compressor_retriever= ContextualCompressionRetriever(
+        base_compressor= base_compressor,
+        base_retriever= ensemble_retriever
+    )
+    llm= ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0)
+    return compressor_retriever, llm
+                                
+    
+
 
 
 def _resolve_db_path(persist_directory: str) -> str:
@@ -21,56 +81,161 @@ def _resolve_db_path(persist_directory: str) -> str:
         return persist_directory
     return os.path.join(_PROJECT_ROOT, persist_directory)
 
+agent_memory= Memory()
+def rewrite_query(query: str, llm)-> str:
+    rewrite_prompt="""You are a senior US GAAP accountant.
+    Extract the core search keywords from the user's question to search a financial database.
+    CRITICAL RULES:
+    1. Identify the Company Name and Year, and put them at the VERY BEGINNING of the keywords.
+    2. If the user asks for a calculated metric (e.g., "Free Cash Flow Conversion", "Gross Margin", "YoY Growth"), DO NOT output the name of the metric. Instead, output the RAW accounting line items needed to calculate it (e.g., "Net Income, Net cash provided by operating activities, Capital expenditures, Purchases of property and equipment").
+    3. Return ONLY a comma-separated list of keywords. Do not explain.
+    Original question: {query}
+    Financial keywords:"""
+    response= llm.invoke(rewrite_prompt.format(query= query))
+    keyword= response.content
+    return f"{query}. Finance keywords:{keyword}" if keyword else query
 
-def answer_query(query: str, persist_directory: str = "data/vector_store/finance_db"):
-    abs_db_path = _resolve_db_path(persist_directory)
 
-    # Retrieval
-    embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vector_store = Chroma(
-        embedding_function=embedding_model,
-        persist_directory=abs_db_path,
+def _build_prompt_and_retrieve(query: str, persist_directory: str):
+    """Hàm nội bộ: retrieve docs + build prompt, dùng chung cho cả streaming và eval."""
+    long_term_txt, short_term_txt, summary = agent_memory.context(query)
+    print("Dang tim cau tra loi...")
+    compressor_retriever, llm = get_resource(persist_directory)
+    results = compressor_retriever.invoke(rewrite_query(query, llm))
+    for i, doc in enumerate(results):
+        print(f"  -> Tài liệu {i+1}: {doc.metadata.get('source')} - trang {doc.metadata.get('page_number')}- content: {doc.page_content[:200]}...")
+
+    context_str = "\n\n".join([
+        f"source: {doc.metadata.get('source')} - page: {doc.metadata.get('page_number')}:\n{doc.page_content}"
+        for doc in results
+    ])
+    context_docs = results
+
+    prompt_template = PromptTemplate(
+        input_variables=["summary", "short_term_txt", "long_term_txt", "context", "query"],
+        template="""Bạn là một chuyên gia phân tích tài chính cấp cao. Hãy trả lời câu hỏi của người dùng dựa trên các dữ liệu sau:
+
+        [TÓM TẮT LỊCH SỬ CHAT (Summary Memory)]:
+        {summary}
+
+        [KÝ ỨC DÀI HẠN CÓ LIÊN QUAN (Long-term Memory)]:
+        {long_term_txt}
+
+        [CÁC LƯỢT CHAT GẦN NHẤT (Short-term Memory)]:
+        {short_term_txt}
+
+        [TÀI LIỆU RAG TRÍCH XUẤT TỪ BÁO CÁO TÀI CHÍNH]:
+        {context}
+
+        QUY TẮC BẮT BUỘC:
+        1. Ưu tiên tuyệt đối dùng [TÀI LIỆU RAG] để trả lời — KHÔNG suy đoán nếu không có trong context.
+        2. Dùng [Memory] để hiểu ngữ cảnh hội thoại nếu câu hỏi là follow-up.
+        3. Luôn TRÍCH DẪN rõ tên file và số trang (Ví dụ: Theo 3M_2018_10K.pdf, trang 60...).
+        4. Khi câu hỏi yêu cầu TÍNH TOÁN (ratio, %, thay đổi YoY...), hãy:
+           a. Xác định rõ từng số liệu cần thiết từ context
+           b. Kiểm tra đơn vị (Millions/Billions) — ĐỪNG nhầm đơn vị
+           c. Thực hiện tính toán từng bước (step-by-step)
+           d. Trình bày công thức và kết quả
+        5. Số liệu tài chính (figures): viết bằng tiếng Anh theo chuẩn quốc tế ($X.XX million/billion).
+           Giải thích và phân tích: viết bằng tiếng Việt chuyên nghiệp.
+        6. Nếu không tìm thấy thông tin trong context, hãy nói thẳng thay vì bịa.
+
+        CÂU HỎI HIỆN TẠI: {query}"""
     )
-    results = vector_store.similarity_search(query, k=3)
+    final_prompt = prompt_template.format(
+        summary=summary,
+        long_term_txt=long_term_txt,
+        short_term_txt=short_term_txt,
+        context=context_str,
+        query=query
+    )
+    return results, context_str, context_docs, llm, final_prompt
+
+
+def answer_query_eval(query: str, persist_directory: str = "data/vector_store/finance_db") -> tuple:
+    """
+    Dùng cho evaluation: trả về (rag_answer, context_docs, context_str) — KHÔNG phải generator.
+    Memory bị TẮT hoàn toàn trong eval mode để tránh nhiễu giữa các câu hỏi độc lập.
+    """
+    print("Dang tim cau tra loi...")
+    compressor_retriever, llm = get_resource(persist_directory)
+    results = compressor_retriever.invoke(rewrite_query(query, llm))
+    for i, doc in enumerate(results):
+        print(f"  -> Tài liệu {i+1}: {doc.metadata.get('source')} - trang {doc.metadata.get('page_number')}- content: {doc.page_content[:200]}...")
 
     if not results:
-        yield "Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu."
-        return
+        return "Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu.", [], ""
 
-    context = "\n\n".join([
+    context_str = "\n\n".join([
         f"source: {doc.metadata.get('source')} - page: {doc.metadata.get('page_number')}:\n{doc.page_content}"
         for doc in results
     ])
 
-    llm= ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite", temperature=0)
-   
-
-    prompt_template = PromptTemplate(
+    # Prompt đơn giản hơn cho eval — không có memory noise
+    eval_prompt_template = PromptTemplate(
         input_variables=["context", "query"],
-        template="""Bạn là một chuyên gia phân tích tài chính cấp cao. Hãy sử dụng CÁC TÀI LIỆU THAM KHẢO dưới đây để trả lời câu hỏi.
-        Yêu cầu bắt buộc:
-        - Chỉ lấy thông tin từ TÀI LIỆU THAM KHẢO được cung cấp, không tự suy diễn.
-        - Luôn TRÍCH DẪN rõ tên file và số trang khi đưa ra số liệu (Ví dụ: Theo báo cáo abc.pdf, trang X...).
-        - Trả lời bằng Tiếng Việt một cách chuyên nghiệp.
+        template="""You are a senior financial analyst. Answer the question based ONLY on the provided documents.
 
-        TÀI LIỆU THAM KHẢO:
-        {context}
+DOCUMENTS:
+{context}
 
-        CÂU HỎI CỦA NGƯỜI DÙNG: {query}""",
+RULES:
+1. Use ONLY information from the documents above — do NOT guess or fabricate.
+2. Always cite the source file and page number (e.g., "According to 3M_2018_10K.pdf, page 60...").
+3. For calculations (ratios, %, YoY change):
+   a. Identify each required figure from the context
+   b. Verify units carefully (Millions vs Billions)
+   c. Show step-by-step calculation
+   d. State the final answer clearly
+4. Report financial figures in standard international format ($X.XX million or $X.XX billion).
+5. If the answer cannot be found in the context, state that explicitly.
+
+QUESTION: {query}
+
+ANSWER:"""
     )
+    final_prompt = eval_prompt_template.format(context=context_str, query=query)
 
-    final_prompt = prompt_template.format(context=context, query=query)
+    response = llm.invoke(final_prompt)
+    raw = response.content
+    if isinstance(raw, list):
+        full_answer = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in raw
+        )
+    else:
+        full_answer = str(raw)
 
+    # context_docs là alias của results để nhất quán với caller
+    context_docs = results
+    # KHÔNG gọi agent_memory.add_conversation() trong eval mode
+    return full_answer, context_docs, context_str
+
+
+def answer_query(query: str, persist_directory: str = "data/vector_store/finance_db", is_eval: bool = False):
+    """Generator streaming — dùng cho UI chat."""
+    results, context_str, context_docs, llm, final_prompt = _build_prompt_and_retrieve(query, persist_directory)
+    if not results:
+        yield "Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu."
+        return
+
+    full_answer = ""
     try:
         for chunk in llm.stream(final_prompt):
             content = chunk.content
-            # Các phiên bản LangChain mới có thể trả về list thay vì str
+            
+            # Làm sạch từng mảnh chunk nếu nó là dạng list
             if isinstance(content, list):
                 content = "".join(
                     part.get("text", "") if isinstance(part, dict) else str(part)
                     for part in content
                 )
-            yield content
+                
+            full_answer += content
+            yield content  # Nhả từng chữ ra màn hình
+            
+        agent_memory.add_conversation(query, full_answer)
+        
     except Exception as e:
         yield f"\n\n⚠️ Lỗi khi gọi mô hình: {e}"
 
@@ -79,7 +244,7 @@ if __name__ == "__main__":
     query = (
         sys.argv[1]
         if len(sys.argv) > 1
-        else "What was the total amount of research, development and related expenses for 3M in 2015? Please answer in Vietnamese"
+        else "Does Adobe have an improving Free cashflow conversion as of FY2022? ?answer in VietNamese."
     )
     for token in answer_query(query):
         print(token, end="", flush=True)
