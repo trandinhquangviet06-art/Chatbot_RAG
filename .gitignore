@@ -42,6 +42,14 @@ data/vector_store/
 *.sqlite
 *.sqlite3
 
+#  Large data files (PDF, binary indexes)  ← tránh push file nặng hàng trăm MB
+*.pdf
+*.faiss
+*.pkl
+*.pickle
+*.npy
+*.npz
+
 #  Models & Checkpoints  ← thường rất nặng (GB)
 models/
 *.bin
