@@ -17,6 +17,7 @@ from memory_manager import Memory
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
+from load_model import load_qwen_local, extract_filter
 _PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 env_path=os.path.join(_PROJECT_ROOT,".env")
 load_dotenv(dotenv_path=env_path)
@@ -27,6 +28,7 @@ if not api_key:
 def get_resource(persist_directory: str):
     """chi loa cac model llm, embedding hay rerank 1 lan thoi chu lan nao chayj cx load lai -> lau+ ton ram"""
     print("load cac model......")
+    qwen_model= load_qwen_local("models/qwen2.5_3B/qwen2.5-coder-3b-instruct-q5_k_m.gguf")
     embedding_model= HuggingFaceEmbeddings(model_name="BAAI/bge-m3")
     abs_db_path= _resolve_db_path(persist_directory)
     vector_store= FAISS.load_local(
@@ -35,7 +37,7 @@ def get_resource(persist_directory: str):
         allow_dangerous_deserialization= True
 
     )
-    vector_search= vector_store.as_retriever(search_kwargs={"k": 20})
+    vector_search= vector_store.as_retriever(search_kwargs={"k": 40})
     chunkeddata_path= os.path.join(_PROJECT_ROOT, "data/processed/chunked_data.jsonl")
     bm25_path= os.path.join(persist_directory, "bm25_index.pkl")
     if os.path.exists(bm25_path):
@@ -52,26 +54,18 @@ def get_resource(persist_directory: str):
             )
             docs.append(tai_lieu)
         bm25_retriever= BM25Retriever.from_documents(docs)
-        bm25_retriever.k= 20
+        bm25_retriever.k= 40
         with open(bm25_path, "wb") as f:
             pickle.dump(bm25_retriever, f)
-    ensemble_retriever= EnsembleRetriever(
-        retrievers= [bm25_retriever, vector_search],
-        weights=[0.6, 0.4]
-    )
+    ensemble_retriever= EnsembleRetriever(retrievers=[vector_search, bm25_retriever], weights=[0.5, 0.5])
 
     print("rerank.....")
     cross_encoder_model= HuggingFaceCrossEncoder(model_name="BAAI/bge-reranker-v2-m3")
     # top_n=8 để giữ nhiều chunk hơn, tăng cơ hội có đủ số liệu cho tính toán
     base_compressor= CrossEncoderReranker(model= cross_encoder_model, top_n=8)
-    compressor_retriever= ContextualCompressionRetriever(
-        base_compressor= base_compressor,
-        base_retriever= ensemble_retriever
-    )
     llm= ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0)
-    return compressor_retriever, llm
+    return qwen_model, base_compressor, llm, ensemble_retriever
                                 
-    
 
 
 
@@ -100,15 +94,38 @@ def _build_prompt_and_retrieve(query: str, persist_directory: str):
     """Hàm nội bộ: retrieve docs + build prompt, dùng chung cho cả streaming và eval."""
     long_term_txt, short_term_txt, summary = agent_memory.context(query)
     print("Dang tim cau tra loi...")
-    compressor_retriever, llm = get_resource(persist_directory)
-    results = compressor_retriever.invoke(rewrite_query(query, llm))
-    for i, doc in enumerate(results):
-        print(f"  -> Tài liệu {i+1}: {doc.metadata.get('source')} - trang {doc.metadata.get('page_number')}- content: {doc.page_content[:200]}...")
-
+    qwen_model, base_compressor, llm, ensemble_retriever = get_resource(persist_directory)
+    metadata_filter= extract_filter(query, qwen_model)
+    target_company= metadata_filter.get("company", "").upper()
+    target_year= metadata_filter.get("year", "")
+    print(f"Metadata filter: company={target_company}, year={target_year}")
+    new_query= rewrite_query(query, llm)
+    raw_doc = ensemble_retriever.invoke(new_query)
+    filtered_docs = []
+    for doc in raw_doc:
+        source_name= str(doc.metadata.get("source", ""))
+        parts= source_name.split("_")
+        if len(parts)>=2:
+            name_company= parts[0].upper()
+            doc_year= parts[1]
+        else:
+            name_company= source_name.upper()
+            doc_year= ""
+        is_valid= True
+        if target_company and name_company != target_company:
+            is_valid= False
+        if target_year and doc_year != target_year:
+            is_valid= False
+        if is_valid:
+            filtered_docs.append(doc)
+    print(f"đã lọc thành công giữ lại {len(filtered_docs)}/{len(raw_doc)}")
+    if filtered_docs:
+        results= base_compressor.compress_documents(filtered_docs, new_query)   
     context_str = "\n\n".join([
         f"source: {doc.metadata.get('source')} - page: {doc.metadata.get('page_number')}:\n{doc.page_content}"
         for doc in results
     ])
+    print(f"context: {context_str[:100]}")
     context_docs = results
 
     prompt_template = PromptTemplate(
@@ -158,11 +175,32 @@ def answer_query_eval(query: str, persist_directory: str = "data/vector_store/fi
     Memory bị TẮT hoàn toàn trong eval mode để tránh nhiễu giữa các câu hỏi độc lập.
     """
     print("Dang tim cau tra loi...")
-    compressor_retriever, llm = get_resource(persist_directory)
-    results = compressor_retriever.invoke(rewrite_query(query, llm))
-    for i, doc in enumerate(results):
-        print(f"  -> Tài liệu {i+1}: {doc.metadata.get('source')} - trang {doc.metadata.get('page_number')}- content: {doc.page_content[:200]}...")
-
+    qwen_model, base_compressor, llm, ensemble_retriever = get_resource(persist_directory)
+    new_query= rewrite_query(query, llm)
+    metadata_filter= extract_filter(query, qwen_model)
+    target_company= metadata_filter.get("company", "").upper()
+    target_year= metadata_filter.get("year", "")
+    raw_doc= ensemble_retriever.invoke(new_query)
+    filtered_docs=[]
+    for doc in raw_doc:
+        sour= doc.metadata.get("source", "")
+        parts= sour.split("_")
+        if len(parts)>=2:
+            doc_company= parts[0].upper()
+            doc_year= parts[1]
+        else:
+            doc_company= sour
+            doc_year= ""
+        is_val= True
+        if target_company and doc_company!= target_company:
+            is_val=False
+        if target_year and doc_year!= target_year:
+            is_val= False
+        if is_val:
+            filtered_docs.append(doc)
+    print(f"da loc va giu lai {len(filtered_docs)}/{len(raw_doc)}")
+    if filtered_docs:
+        results= base_compressor.compress_documents(filtered_docs, new_query)
     if not results:
         return "Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu.", [], ""
 
@@ -170,6 +208,7 @@ def answer_query_eval(query: str, persist_directory: str = "data/vector_store/fi
         f"source: {doc.metadata.get('source')} - page: {doc.metadata.get('page_number')}:\n{doc.page_content}"
         for doc in results
     ])
+    print("context: {context_str}")
 
     # Prompt đơn giản hơn cho eval — không có memory noise
     eval_prompt_template = PromptTemplate(
