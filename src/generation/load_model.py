@@ -39,6 +39,7 @@ JSON:"""
         match = re.search(r'\{.*?\}', content, re.DOTALL)
         if match:
             json_str = match.group(0)
+            print(f"filter: {json_str}")
             return json.loads(json_str)
         else:
             return {"company": "", "year": ""}
