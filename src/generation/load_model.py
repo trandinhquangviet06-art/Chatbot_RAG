@@ -1,34 +1,65 @@
-from langchain_community.llms import llamacpp
-def load_qwen_local(path: str):
-    llama_model= llamacpp.LlamaCpp(
-        model_path= path,
-        n_ctx= 2048,
-        n_gpu_layers= -1,
-        temperature=0.0,
-        max_tokens= 100,
-        verbose= False
-    )
-    return llama_model
 import json
 import re
 
-def extract_filter(query: str, llm) -> dict:
-    prompt = f"""You are a highly strict data extraction parser. Your ONLY job is to extract the target company and year from the user's query into a valid JSON object.
+# llama-cpp-python chi dung duoc o local (can C++ compiler de build).
+# Tren Streamlit Cloud se fallback sang regex-based parser.
+try:
+    from langchain_community.llms import llamacpp
+    _LLAMA_AVAILABLE = True
+except Exception:
+    _LLAMA_AVAILABLE = False
 
-CRITICAL RULES:
-1. Output ONLY a raw JSON object. NO markdown formatting (like ```json), NO conversational text, NO explanations.
-2. "company": Extract the core company name and convert to UPPERCASE (e.g., "ADOBE", "3M", "GENERALMILLS"). If no company is mentioned, output "".
-3. "year": Extract as a 4-digit string (e.g., "2022"). If no year is mentioned, output "".
+
+def load_qwen_local(path: str):
+    """Load Qwen model local. Tra ve None neu khong co llama-cpp-python."""
+    if not _LLAMA_AVAILABLE:
+        print("[load_model] llama-cpp-python khong co san, bo qua Qwen model.")
+        return None
+    try:
+        return llamacpp.LlamaCpp(
+            model_path=path,
+            n_ctx=2048,
+            n_gpu_layers=-1,
+            temperature=0.0,
+            max_tokens=100,
+            verbose=False,
+        )
+    except Exception as e:
+        print(f"[load_model] Khong the load Qwen model: {e}")
+        return None
+
+
+def extract_filter(query: str, llm) -> dict:
+    """
+    Trich xuat {company, year} tu query.
+    - Neu llm is None (cloud mode): dung regex don gian.
+    - Neu co llm (local mode): goi LLM nhu cu.
+    """
+    # --- Fallback: regex-based (cloud / no LLM) ---
+    if llm is None:
+        year_match = re.search(r'\b(20\d{2})\b', query)
+        year = year_match.group(1) if year_match else ""
+        known = ["ADOBE", "APPLE", "3M", "GENERALMILLS", "AMAZON",
+                 "GOOGLE", "MICROSOFT", "META", "NETFLIX", "TESLA"]
+        company = ""
+        q_upper = query.upper()
+        for k in known:
+            if k in q_upper:
+                company = k
+                break
+        return {"company": company, "year": year}
+
+    # --- Full LLM path (local) ---
+    prompt = f"""You are a strict data extraction parser. Extract the target company and year from the user query.
+
+RULES:
+1. Output ONLY a raw JSON object.
+2. "company": UPPERCASE company name. If none, output "".
+3. "year": 4-digit string. If none, output "".
 
 EXAMPLES:
-Query: "Does Adobe have an improving Free cashflow conversion in 2022?"
+Query: "Does Adobe have improving Free cashflow in 2022?"
 JSON: {{"company": "ADOBE", "year": "2022"}}
-
-Query: "Explain how to calculate gross margin."
-JSON: {{"company": "", "year": ""}}
-
-Query: "What were 3M's capital expenditures last year?"
-JSON: {{"company": "3M", "year": ""}}
 
 Query: "{query}"
 JSON:"""
@@ -36,14 +67,12 @@ JSON:"""
     try:
         response = llm.invoke(prompt)
         content = response if isinstance(response, str) else response[0]["generated_text"]
-        match = re.search(r'\{.*?\}', content, re.DOTALL)
+        match = re.search(r'\{{.*?\}}', content, re.DOTALL)
         if match:
             json_str = match.group(0)
             print(f"filter: {json_str}")
             return json.loads(json_str)
-        else:
-            return {"company": "", "year": ""}
-            
+        return {"company": "", "year": ""}
     except Exception as e:
-        print(f"Lỗi bóc tách JSON trong extract_filter(): {e}")
+        print(f"Loi extract_filter(): {e}")
         return {"company": "", "year": ""}
