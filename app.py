@@ -1,8 +1,10 @@
 """
-app.py - Giao dien chatbot RAG viet bang Streamlit.
-Phong cach Apple Design System, tuong duong voi app/ui.py (Gradio).
+app.py - FinanceBot RAG Chatbot voi Streaming thuc su.
+- Tung token duoc stream ra ngay khi nhan duoc tu LLM.
+- Hieu ung "dang suy nghi" voi animated dots.
+- Dark-mode premium UI voi glassmorphism.
 
-Deploy: Streamlit Cloud → Main file path: app.py
+Deploy: Streamlit Cloud -> Main file path: app.py
 """
 import streamlit as st
 import sys
@@ -18,259 +20,419 @@ from src.generation.generator import answer_query
 # Page config
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="FinanceBot - Trợ lý Phân tích Tài chính",
+    page_title="FinanceBot - Tro ly Phan tich Tai chinh",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
 
 # ---------------------------------------------------------------------------
-# Apple Design System CSS
+# Premium Dark-mode CSS
 # ---------------------------------------------------------------------------
-APPLE_CSS = """
+PREMIUM_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --apple-white:     #FFFFFF;
-    --apple-soft:      #FBFBFD;
-    --apple-gray-050:  #F5F5F7;
-    --apple-ink:       #1D1D1F;
-    --apple-muted:     #86868B;
-    --apple-blue:      #0071E3;
-    --apple-blue-deep: #0066CC;
-    --apple-border:    #D2D2D7;
-    --shadow-soft:     0 6px 20px rgba(0,0,0,.08);
-    --shadow-card:     0 12px 32px rgba(0,0,0,.10);
-    --shadow-focus:    0 0 0 4px rgba(0,113,227,.14);
+    --bg-base:       #0A0A0F;
+    --bg-surface:    #13131A;
+    --bg-card:       #1A1A24;
+    --bg-input:      #1E1E2A;
+    --accent:        #6366F1;
+    --accent-glow:   rgba(99,102,241,.35);
+    --accent-light:  #818CF8;
+    --text-primary:  #F1F1F3;
+    --text-secondary:#A0A0B0;
+    --text-muted:    #60607A;
+    --border:        rgba(255,255,255,.08);
+    --shadow-card:   0 20px 60px rgba(0,0,0,.5);
     --font-sans: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
-    --font-mono: "SF Mono", Menlo, Monaco, monospace;
+    --font-mono: "SF Mono", Menlo, Monaco, "Courier New", monospace;
 }
 
-html, body, [class*="css"] { font-family: var(--font-sans) !important; }
-.stApp { background: var(--apple-soft) !important; }
+html, body, [class*="css"] {
+    font-family: var(--font-sans) !important;
+    background: var(--bg-base) !important;
+    color: var(--text-primary) !important;
+}
+.stApp { background: var(--bg-base) !important; }
 #MainMenu, footer, header { visibility: hidden; }
 .block-container { padding: 0 !important; max-width: 100% !important; }
 section[data-testid="stSidebar"] { display: none !important; }
 
-/* NAV */
-.nav-bar {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(255,255,255,.82);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-bottom: 1px solid var(--apple-border);
+.fin-nav {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(10,10,15,.85);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 48px; height: 52px;
+    padding: 0 48px; height: 56px;
 }
-.nav-logo { font-size: 20px; font-weight: 600; letter-spacing: -.02em; color: var(--apple-ink); display: flex; align-items: center; gap: 10px; }
-.nav-dot  { width: 10px; height: 10px; border-radius: 50%; background: var(--apple-blue); display: inline-block; }
-.nav-status { font-size: 13px; color: var(--apple-muted); }
+.fin-nav-logo {
+    font-size: 18px; font-weight: 700; letter-spacing: -.02em;
+    color: var(--text-primary); display: flex; align-items: center; gap: 10px;
+}
+.fin-nav-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 6px var(--accent-glow); }
+    50%      { box-shadow: 0 0 18px var(--accent-glow), 0 0 30px var(--accent-glow); }
+}
+.fin-nav-badge {
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    color: var(--accent-light);
+    background: rgba(99,102,241,.12);
+    border: 1px solid rgba(99,102,241,.25);
+    border-radius: 999px; padding: 3px 10px;
+}
 
-/* HERO */
-.hero-section { text-align: center; padding: 64px 24px 36px; max-width: 760px; margin: 0 auto; }
-.hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--apple-blue); text-transform: uppercase; margin-bottom: 12px; }
-.hero-title   { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.06; letter-spacing: -.03em; color: var(--apple-ink); margin-bottom: 14px; }
-.hero-sub     { font-size: 18px; line-height: 1.5; letter-spacing: -.01em; color: var(--apple-muted); }
+.fin-hero {
+    text-align: center; padding: 60px 24px 32px;
+    max-width: 800px; margin: 0 auto;
+}
+.fin-hero-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    color: var(--accent-light); text-transform: uppercase;
+    background: rgba(99,102,241,.1);
+    border: 1px solid rgba(99,102,241,.2);
+    border-radius: 999px; padding: 5px 14px; margin-bottom: 20px;
+}
+.fin-hero-title {
+    font-size: clamp(28px,4.5vw,52px);
+    font-weight: 700; line-height: 1.08; letter-spacing: -.03em;
+    color: var(--text-primary); margin-bottom: 14px;
+}
+.fin-hero-sub {
+    font-size: 17px; line-height: 1.6; color: var(--text-secondary);
+    max-width: 560px; margin: 0 auto;
+}
 
-/* CHIP BUTTONS */
 div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button {
-    background: var(--apple-white) !important;
-    border: 1px solid var(--apple-border) !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
     border-radius: 999px !important;
-    color: var(--apple-ink) !important;
+    color: var(--text-secondary) !important;
     font-size: 13px !important;
     font-family: var(--font-sans) !important;
     padding: 8px 18px !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,.06) !important;
-    transition: all .15s !important;
+    transition: all .2s !important;
     width: auto !important;
 }
 div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:hover {
-    border-color: var(--apple-blue) !important;
-    color: var(--apple-blue) !important;
-    box-shadow: 0 2px 8px rgba(0,113,227,.12) !important;
+    border-color: rgba(99,102,241,.5) !important;
+    color: var(--accent-light) !important;
+    background: rgba(99,102,241,.08) !important;
 }
 
-/* CHAT CARD */
-.chat-card-wrap { max-width: 860px; margin: 0 auto 24px; padding: 0 16px; }
-.chat-card      { background: var(--apple-white); border-radius: 24px; box-shadow: var(--shadow-card); overflow: hidden; }
-.chat-card-header { background: var(--apple-gray-050); border-bottom: 1px solid var(--apple-border); padding: 14px 24px; display: flex; align-items: center; gap: 8px; }
-.hd   { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
-.hd-r { background: #FF5F57; }
-.hd-a { background: #FFBD2E; }
-.hd-g { background: #28C840; }
-.chat-header-title { font-size: 13px; font-weight: 500; color: var(--apple-muted); margin-left: 4px; }
+.fin-chat-wrap { max-width: 880px; margin: 0 auto 20px; padding: 0 16px; }
+.fin-chat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+.fin-chat-header {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 8px;
+}
+.fin-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.fin-dot-r { background: #FF5F57; }
+.fin-dot-a { background: #FFBD2E; }
+.fin-dot-g { background: #28C840; }
+.fin-chat-title { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-left: 6px; }
 
-/* MESSAGES */
-.chat-messages {
-    padding: 24px 28px; min-height: 360px; max-height: 500px;
+.fin-messages {
+    padding: 24px 28px;
+    min-height: 380px; max-height: 520px;
     overflow-y: auto; scroll-behavior: smooth;
-    display: flex; flex-direction: column; gap: 14px;
+    display: flex; flex-direction: column; gap: 16px;
 }
-.chat-messages::-webkit-scrollbar { width: 5px; }
-.chat-messages::-webkit-scrollbar-thumb { background: var(--apple-border); border-radius: 99px; }
-.msg-row      { display: flex; align-items: flex-end; gap: 10px; }
-.msg-row.user { flex-direction: row-reverse; }
-.msg-row.bot  { flex-direction: row; }
-.msg-bubble   { max-width: 72%; font-size: 15px; line-height: 1.6; padding: 12px 18px; border-radius: 20px; word-break: break-word; }
-.msg-row.user .msg-bubble { background: var(--apple-blue); color: var(--apple-white); border-radius: 20px 20px 6px 20px; box-shadow: 0 2px 8px rgba(0,113,227,.22); }
-.msg-row.bot  .msg-bubble { background: var(--apple-gray-050); color: var(--apple-ink); border-radius: 20px 20px 20px 6px; border: 1px solid var(--apple-border); max-width: 82%; }
+.fin-messages::-webkit-scrollbar { width: 4px; }
+.fin-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-/* STREAMLIT CHAT INPUT override */
+.fin-msg-row { display: flex; align-items: flex-end; gap: 10px; }
+.fin-msg-row.user { flex-direction: row-reverse; }
+.fin-msg-row.bot  { flex-direction: row; }
+
+.fin-bubble {
+    font-size: 15px; line-height: 1.65;
+    padding: 12px 18px; word-break: break-word;
+}
+.fin-msg-row.user .fin-bubble {
+    max-width: 75%;
+    background: linear-gradient(135deg, #6366F1, #4F46E5);
+    color: #FFFFFF;
+    border-radius: 20px 20px 5px 20px;
+    box-shadow: 0 4px 20px rgba(99,102,241,.35);
+}
+.fin-msg-row.bot .fin-bubble {
+    max-width: 82%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    border-radius: 20px 20px 20px 5px;
+    border: 1px solid var(--border);
+}
+
+.fin-thinking {
+    display: flex; align-items: center; gap: 6px;
+    padding: 12px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 20px 5px;
+}
+.fin-thinking-label {
+    font-size: 13px; color: var(--text-muted); font-style: italic;
+    margin-right: 4px;
+}
+.fin-thinking-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    animation: think-bounce 1.3s ease-in-out infinite;
+}
+.fin-thinking-dot:nth-child(2) { animation-delay: .15s; }
+.fin-thinking-dot:nth-child(3) { animation-delay: .30s; }
+.fin-thinking-dot:nth-child(4) { animation-delay: .45s; }
+@keyframes think-bounce {
+    0%,60%,100% { transform: translateY(0); opacity: .4; }
+    30%          { transform: translateY(-6px); opacity: 1; }
+}
+
+.fin-cursor {
+    display: inline-block; width: 2px; height: 16px;
+    background: var(--accent-light); border-radius: 1px;
+    margin-left: 2px; vertical-align: middle;
+    animation: blink-cur .7s ease-in-out infinite;
+}
+@keyframes blink-cur {
+    0%,100% { opacity: 1; } 50% { opacity: 0; }
+}
+
 div[data-testid="stChatInput"] {
-    max-width: 860px !important;
+    max-width: 880px !important;
     margin: 0 auto !important;
     padding: 0 16px !important;
 }
 div[data-testid="stChatInput"] textarea {
-    border-radius: 14px !important;
+    border-radius: 16px !important;
     font-family: var(--font-sans) !important;
     font-size: 15px !important;
-    border: 1px solid var(--apple-border) !important;
-    background: var(--apple-white) !important;
-    box-shadow: var(--shadow-soft) !important;
+    border: 1px solid var(--border) !important;
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    box-shadow: none !important;
 }
 div[data-testid="stChatInput"] textarea:focus {
-    border-color: var(--apple-blue) !important;
-    box-shadow: var(--shadow-focus) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.2) !important;
+}
+div[data-testid="stChatInput"] textarea::placeholder {
+    color: var(--text-muted) !important;
 }
 
-/* SOURCE CARD */
-.source-card-wrap { max-width: 860px; margin: 16px auto 32px; padding: 0 16px; }
-.source-card  { background: var(--apple-white); border-radius: 16px; border: 1px solid var(--apple-border); padding: 16px 22px; box-shadow: var(--shadow-soft); }
-.source-label { font-size: 11px; font-weight: 600; letter-spacing: .05em; color: var(--apple-muted); text-transform: uppercase; margin-bottom: 8px; }
-.source-text  { font-family: var(--font-mono); font-size: 13px; line-height: 1.6; color: var(--apple-ink); background: var(--apple-gray-050); border: 1px solid var(--apple-border); border-radius: 10px; padding: 10px 14px; }
+.fin-status-wrap { max-width: 880px; margin: 12px auto 28px; padding: 0 16px; }
+.fin-status {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 18px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.fin-status-icon { font-size: 14px; }
+.fin-status-text { font-size: 13px; color: var(--text-secondary); font-family: var(--font-mono); }
 
-/* FOOTER */
-.footer { text-align: center; padding: 24px 24px 40px; font-size: 13px; color: var(--apple-muted); border-top: 1px solid var(--apple-border); margin-top: 8px; }
+.fin-footer {
+    text-align: center; padding: 24px 24px 40px;
+    font-size: 12px; color: var(--text-muted);
+    border-top: 1px solid var(--border); margin-top: 12px;
+    letter-spacing: .02em;
+}
 </style>
 """
 
 # ---------------------------------------------------------------------------
-# State init — chỉ chạy 1 lần
+# State
 # ---------------------------------------------------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "bot", "content": "Xin chào! Tôi là FinanceBot. Hãy đặt câu hỏi về báo cáo tài chính và tôi sẽ tìm kiếm câu trả lời chính xác từ tài liệu."}
+        {"role": "bot", "content": "Xin chao! Toi la **FinanceBot**. Hay dat cau hoi ve bao cao tai chinh."}
     ]
 if "status" not in st.session_state:
-    st.session_state.status = "Sẵn sàng nhận câu hỏi của bạn."
-# pending_query: chứa câu hỏi chờ xử lý (None = không có gì cần xử lý)
+    st.session_state.status = ("✅", "San sang nhan cau hoi cua ban.")
 if "pending_query" not in st.session_state:
     st.session_state.pending_query = None
 
 # ---------------------------------------------------------------------------
-# XỬ LÝ QUERY — thực hiện TRƯỚC KHI render bất cứ thứ gì
-# Đây là điểm mấu chốt: xử lý 1 lần rồi set pending_query = None → không loop
+# Render CSS + NAV
 # ---------------------------------------------------------------------------
-if st.session_state.pending_query:
-    query = st.session_state.pending_query
-    st.session_state.pending_query = None          # ← xóa ngay, tránh loop
+st.markdown(PREMIUM_CSS, unsafe_allow_html=True)
 
-    # Thêm câu hỏi user
-    st.session_state.messages.append({"role": "user", "content": query})
-    st.session_state.status = "Đang tìm kiếm trong tài liệu..."
-
-    # Gọi RAG pipeline
-    try:
-        accumulated = ""
-        for chunk in answer_query(query):
-            accumulated += chunk
-        st.session_state.messages.append({"role": "bot", "content": accumulated})
-        st.session_state.status = "Hoàn thành. Sẵn sàng cho câu hỏi tiếp theo."
-    except Exception as e:
-        st.session_state.messages.append({"role": "bot", "content": f"⚠️ Lỗi: {e}"})
-        st.session_state.status = f"Lỗi: {e}"
-
-    st.rerun()  # rerun để hiển thị messages mới; lần này pending_query = None nên dừng
-
-# ---------------------------------------------------------------------------
-# RENDER UI
-# ---------------------------------------------------------------------------
-st.markdown(APPLE_CSS, unsafe_allow_html=True)
-
-# NAV
 st.markdown("""
-<nav class="nav-bar">
-    <span class="nav-logo"><span class="nav-dot"></span>FinanceBot</span>
-    <span class="nav-status">Trợ lý Phân tích Tài chính &middot; Gemini Flash</span>
+<nav class="fin-nav">
+    <span class="fin-nav-logo">
+        <span class="fin-nav-dot"></span>FinanceBot
+    </span>
+    <span class="fin-nav-badge">RAG · Gemini Flash</span>
 </nav>
 """, unsafe_allow_html=True)
 
 # HERO
 st.markdown("""
-<div class="hero-section">
-    <p class="hero-eyebrow">RAG &middot; Retrieval-Augmented Generation</p>
-    <h1 class="hero-title">Phân tích báo cáo tài chính<br>một cách thông minh.</h1>
-    <p class="hero-sub">Đặt câu hỏi bằng Tiếng Việt — FinanceBot sẽ tra cứu tài liệu,
-    trích dẫn nguồn chính xác và trả lời tức thì.</p>
+<div class="fin-hero">
+    <div class="fin-hero-pill">📊 Retrieval-Augmented Generation</div>
+    <h1 class="fin-hero-title">Phan tich bao cao tai chinh<br>mot cach thong minh.</h1>
+    <p class="fin-hero-sub">Dat cau hoi bang Tieng Viet — FinanceBot tra cuu tai lieu,
+    trich dan nguon chinh xac va tra loi ngay theo thoi gian thuc.</p>
 </div>
 """, unsafe_allow_html=True)
 
 # SUGGESTION CHIPS
 SUGGESTIONS = [
-    "Chi phí R&D của 3M năm 2015?",
-    "Doanh thu thuần năm gần nhất?",
-    "Lợi nhuận gộp và biên lợi nhuận?",
+    "Chi phi R&D cua 3M nam 2015?",
+    "Doanh thu thuan nam gan nhat?",
+    "Loi nhuan gop va bien loi nhuan?",
 ]
-cols = st.columns([2, 3, 3, 3, 2])
+cols = st.columns([1, 3, 3, 3, 1])
 for i, s in enumerate(SUGGESTIONS):
     with cols[i + 1]:
         if st.button(s, key=f"chip_{i}"):
             st.session_state.pending_query = s
             st.rerun()
 
-# CHAT CARD
-def render_messages(messages):
-    html = '<div class="chat-messages" id="chat-messages">'
-    for m in messages:
-        role = "user" if m["role"] == "user" else "bot"
-        content = m["content"].replace("\n", "<br>")
-        html += f'<div class="msg-row {role}"><div class="msg-bubble">{content}</div></div>'
-    html += "</div>"
-    return html
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-st.markdown('<div class="chat-card-wrap"><div class="chat-card">', unsafe_allow_html=True)
+# CHAT CARD header
 st.markdown("""
-<div class="chat-card-header">
-    <span class="hd hd-r"></span><span class="hd hd-a"></span><span class="hd hd-g"></span>
-    <span class="chat-header-title">FinanceBot — Cuộc trò chuyện</span>
-</div>
+<div class="fin-chat-wrap">
+  <div class="fin-chat-card">
+    <div class="fin-chat-header">
+      <span class="fin-dot fin-dot-r"></span>
+      <span class="fin-dot fin-dot-a"></span>
+      <span class="fin-dot fin-dot-g"></span>
+      <span class="fin-chat-title">FinanceBot — Cuoc tro chuyen</span>
+    </div>
 """, unsafe_allow_html=True)
-st.markdown(render_messages(st.session_state.messages), unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# MESSAGES + REAL STREAMING
+# ---------------------------------------------------------------------------
+def render_bubble(role: str, content: str) -> str:
+    content_html = content.replace("\n", "<br>")
+    return (
+        f'<div class="fin-msg-row {role}">'
+        f'<div class="fin-bubble">{content_html}</div>'
+        f'</div>'
+    )
+
+messages_placeholder = st.empty()
+
+def render_all_messages(extra_html: str = ""):
+    html = '<div class="fin-messages" id="fin-messages">'
+    for m in st.session_state.messages:
+        html += render_bubble(m["role"], m["content"])
+    html += extra_html
+    html += "</div>"
+    messages_placeholder.markdown(html, unsafe_allow_html=True)
+
+THINKING_HTML = """
+<div class="fin-msg-row bot">
+  <div class="fin-thinking">
+    <span class="fin-thinking-label">Dang suy nghi</span>
+    <span class="fin-thinking-dot"></span>
+    <span class="fin-thinking-dot"></span>
+    <span class="fin-thinking-dot"></span>
+    <span class="fin-thinking-dot"></span>
+  </div>
+</div>"""
+
+if st.session_state.pending_query:
+    query = st.session_state.pending_query
+    st.session_state.pending_query = None
+
+    # Them user message va hien thi thinking
+    st.session_state.messages.append({"role": "user", "content": query})
+    st.session_state.status = ("🔍", "Dang tim kiem trong tai lieu...")
+    render_all_messages(extra_html=THINKING_HTML)
+
+    # STREAMING: moi chunk tu LLM hien thi ngay lap tuc
+    accumulated = ""
+    try:
+        st.session_state.status = ("⚡", "Dang tra loi theo thoi gian thuc...")
+        for chunk in answer_query(query):
+            accumulated += chunk
+            # Hien thi noi dung dang stream + cursor nhay
+            streaming_html = (
+                '<div class="fin-msg-row bot">'
+                '<div class="fin-bubble">'
+                + accumulated.replace("\n", "<br>")
+                + '<span class="fin-cursor"></span>'
+                '</div></div>'
+            )
+            render_all_messages(extra_html=streaming_html)
+
+        # Luu vao messages, bo cursor
+        st.session_state.messages.append({"role": "bot", "content": accumulated})
+        st.session_state.status = ("✅", "Hoan thanh. San sang cho cau hoi tiep theo.")
+
+    except Exception as e:
+        err_msg = f"Loi: {e}"
+        st.session_state.messages.append({"role": "bot", "content": err_msg})
+        st.session_state.status = ("❌", f"Loi: {e}")
+
+    render_all_messages()
+
+else:
+    render_all_messages()
+
 st.markdown("</div></div>", unsafe_allow_html=True)
 
-# CHAT INPUT — st.chat_input tự xóa sau mỗi lần submit, không gây loop
-if prompt := st.chat_input("Hỏi về báo cáo tài chính..."):
+# ---------------------------------------------------------------------------
+# CHAT INPUT
+# ---------------------------------------------------------------------------
+if prompt := st.chat_input("Hoi ve bao cao tai chinh...", key="main_input"):
     st.session_state.pending_query = prompt
     st.rerun()
 
-# STATUS CARD
+# ---------------------------------------------------------------------------
+# STATUS BAR
+# ---------------------------------------------------------------------------
+icon, text = st.session_state.status
 st.markdown(f"""
-<div class="source-card-wrap">
-  <div class="source-card">
-    <p class="source-label">Trạng thái</p>
-    <div class="source-text">{st.session_state.status}</div>
+<div class="fin-status-wrap">
+  <div class="fin-status">
+    <span class="fin-status-icon">{icon}</span>
+    <span class="fin-status-text">{text}</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-# XÓA CHAT
-col_clear, _ = st.columns([1, 5])
+# ---------------------------------------------------------------------------
+# XOA CHAT
+# ---------------------------------------------------------------------------
+col_clear, _ = st.columns([1, 7])
 with col_clear:
-    if st.button("🗑️ Xóa cuộc trò chuyện", key="clear_btn"):
+    if st.button("🗑️ Xoa chat", key="clear_btn"):
         st.session_state.messages = [
-            {"role": "bot", "content": "Cuộc trò chuyện đã được xóa. Hãy đặt câu hỏi mới!"}
+            {"role": "bot", "content": "Cuoc tro chuyen da duoc xoa. Hay dat cau hoi moi!"}
         ]
-        st.session_state.status = "Sẵn sàng nhận câu hỏi của bạn."
+        st.session_state.status = ("✅", "San sang nhan cau hoi cua ban.")
         st.rerun()
 
+# ---------------------------------------------------------------------------
 # FOOTER
+# ---------------------------------------------------------------------------
 st.markdown("""
-<footer class="footer">
+<footer class="fin-footer">
     Copyright &copy; 2025 FinanceBot &nbsp;&middot;&nbsp;
     Powered by Gemini Flash &amp; LangChain &nbsp;&middot;&nbsp;
-    Dữ liệu chỉ từ tài liệu đã nạp vào hệ thống
+    Du lieu chi tu tai lieu da nap vao he thong
 </footer>
 """, unsafe_allow_html=True)

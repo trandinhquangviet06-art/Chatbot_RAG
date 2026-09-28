@@ -1,4 +1,4 @@
-﻿"""
+"""
 ui.py - Giao dien chatbot RAG theo phong cach Apple Design System.
 
 Chay:
@@ -284,19 +284,24 @@ def build_ui():
             if not query or not query.strip():
                 yield history or [], "", "San sang."
                 return
-            full_history = (history or []) + [[query.strip(), ""]]
-            yield full_history, "", "Dang tim kiem trong tai lieu..."
+            q = query.strip()
+            full_history = (history or []) + [[q, ""]]
+            # Buoc 1: hien thi thinking placeholder ngay lap tuc
+            yield full_history, "", "🔍 Dang tim kiem va phan tich tai lieu..."
             accumulated = ""
             try:
-                for chunk in answer_query(query.strip()):
+                for chunk in answer_query(q):
                     accumulated += chunk
-                    full_history[-1][1] = accumulated
-                    yield full_history, "", "Dang tra loi..."
+                    # Cap nhat ngay tung token vao chatbot + cursor gia lap
+                    full_history[-1][1] = accumulated + " ▮"
+                    yield full_history, "", "⚡ Dang tra loi theo thoi gian thuc..."
+                # Xoa cursor khi stream xong
+                full_history[-1][1] = accumulated
+                yield full_history, "", "✅ Hoan thanh. San sang cho cau hoi tiep theo."
             except Exception as exc:
-                full_history[-1][1] = f"Loi: {exc}"
-                yield full_history, "", f"Loi: {exc}"
+                full_history[-1][1] = f"⚠️ Loi: {exc}"
+                yield full_history, "", f"❌ Loi: {exc}"
                 return
-            yield full_history, "", "Hoan thanh. San sang cho cau hoi tiep theo."
 
         send_btn.click(
             fn=on_submit,
