@@ -2,7 +2,6 @@
 # requirements.txt - Streamlit Cloud (Python 3.11)
 # ============================================================
 # NOTE: runtime.txt must specify python-3.11 to get prebuilt wheels
-# for torch, numpy, scikit-learn, etc.
 
 # --- Streamlit ---
 streamlit>=1.35.0,<2.0.0
@@ -13,13 +12,13 @@ langchain-google-genai>=2.0.0
 
 # --- LangChain ecosystem v1.x ---
 # langchain-classic requires langchain-text-splitters>=1.0.0,<2.0.0
-# so ALL langchain packages must be v1.x
+# langchain-chroma latest = 1.1.0, langchain-huggingface latest = 1.2.2
 langchain>=1.0.0,<2.0.0
 langchain-core>=1.0.0,<2.0.0
 langchain-community>=1.0.0,<2.0.0
 langchain-classic>=1.0.0,<2.0.0
-langchain-huggingface>=0.1.0,<0.2.0
-langchain-chroma>=0.1.0,<0.2.0
+langchain-huggingface>=1.0.0,<2.0.0
+langchain-chroma>=1.0.0,<2.0.0
 langchain-text-splitters>=1.0.0,<2.0.0
 
 # --- Vector store ---
@@ -29,7 +28,6 @@ faiss-cpu>=1.8.0,<2.0.0
 rank-bm25>=0.2.2
 
 # --- PyTorch CPU-only ---
-# NOTE: Streamlit Cloud installs CPU torch by default (no GPU available)
 torch>=2.0.0,<3.0.0
 
 # --- Embeddings & Reranker ---
@@ -46,7 +44,7 @@ pymupdf>=1.24.0
 # --- Utils ---
 python-dotenv>=1.0.0
 scikit-learn>=1.3.0,<2.0.0
-numpy>=1.26.0,<2.2.0
+numpy>=2.2.0
 pydantic>=2.0.0,<3.0.0
 pydantic-settings>=2.0.0,<3.0.0
 httpx>=0.27.0
