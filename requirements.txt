@@ -9,7 +9,7 @@ streamlit>=1.35.0,<2.0.0
 
 # --- Google Gemini ---
 google-genai>=2.0.0
-langchain-google-genai>=2.0.0,<3.0.0
+langchain-google-genai>=2.0.0
 
 # --- LangChain ecosystem v1.x ---
 # langchain-classic requires langchain-text-splitters>=1.0.0,<2.0.0
@@ -28,8 +28,8 @@ faiss-cpu>=1.8.0,<2.0.0
 # --- BM25 ---
 rank-bm25>=0.2.2
 
-# --- PyTorch CPU-only (prebuilt wheel for Python 3.11) ---
---extra-index-url https://download.pytorch.org/whl/cpu
+# --- PyTorch CPU-only ---
+# NOTE: Streamlit Cloud installs CPU torch by default (no GPU available)
 torch>=2.0.0,<3.0.0
 
 # --- Embeddings & Reranker ---
