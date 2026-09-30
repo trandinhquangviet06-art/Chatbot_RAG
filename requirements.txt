@@ -1,6 +1,8 @@
 # ============================================================
 # requirements.txt - Streamlit Cloud (Python 3.11)
 # ============================================================
+# NOTE: runtime.txt must specify python-3.11 to get prebuilt wheels
+# for torch, numpy, scikit-learn, etc.
 
 # --- Streamlit ---
 streamlit>=1.35.0,<2.0.0
@@ -9,14 +11,16 @@ streamlit>=1.35.0,<2.0.0
 google-genai>=2.0.0
 langchain-google-genai>=2.0.0,<3.0.0
 
-# --- LangChain ecosystem ---
-langchain>=0.3.0,<0.4.0
-langchain-core>=0.3.0,<0.4.0
-langchain-community>=0.3.0,<0.4.0
-langchain-classic>=0.1.0
+# --- LangChain ecosystem v1.x ---
+# langchain-classic requires langchain-text-splitters>=1.0.0,<2.0.0
+# so ALL langchain packages must be v1.x
+langchain>=1.0.0,<2.0.0
+langchain-core>=1.0.0,<2.0.0
+langchain-community>=1.0.0,<2.0.0
+langchain-classic>=1.0.0,<2.0.0
 langchain-huggingface>=0.1.0,<0.2.0
 langchain-chroma>=0.1.0,<0.2.0
-langchain-text-splitters>=0.3.0,<0.4.0
+langchain-text-splitters>=1.0.0,<2.0.0
 
 # --- Vector store ---
 faiss-cpu>=1.8.0,<2.0.0
@@ -24,7 +28,8 @@ faiss-cpu>=1.8.0,<2.0.0
 # --- BM25 ---
 rank-bm25>=0.2.2
 
-# --- PyTorch CPU-only ---
+# --- PyTorch CPU-only (prebuilt wheel for Python 3.11) ---
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch>=2.0.0,<3.0.0
 
 # --- Embeddings & Reranker ---
