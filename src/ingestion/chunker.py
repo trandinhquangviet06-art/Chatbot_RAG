@@ -12,11 +12,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import MarkdownTextSplitter, RecursiveCharacterTextSplitter
 
-
-# ======================================================================
-# SQLiteByteStore — luu toan bo parent docs vao 1 file .db duy nhat
-# Thay the LocalFileStore (tao hang nghin file nho -> lag khi upload Kaggle)
-# ======================================================================
 class SQLiteByteStore(ByteStore):
     """LangChain ByteStore backed by a single SQLite file."""
 
@@ -95,16 +90,7 @@ class SQLiteByteStore(ByteStore):
 
 
 def create_chunks(input_json: str, vector_store_path: str, parent_db_path: str):
-    """
-    Tao vector store (FAISS) va parent docstore (SQLite).
-
-    Args:
-        input_json:        Duong dan toi file JSON chua du lieu dau vao.
-        vector_store_path: Thu muc luu FAISS index (.faiss + .pkl).
-        parent_db_path:    Duong dan file SQLite luu parent documents, vi du
-                           'parent_docstore.db'. Chi la 1 FILE duy nhat —
-                           de upload/download hon nhieu so voi thu muc.
-    """
+    
     with open(input_json, "r", encoding="utf-8") as f:
         documents = json.load(f)
 
@@ -137,12 +123,6 @@ def create_chunks(input_json: str, vector_store_path: str, parent_db_path: str):
 
     vector_store = FAISS.from_texts(["init"], embedding=embedding)
 
-    # ------------------------------------------------------------------ #
-    # Dung SQLiteByteStore thay cho LocalFileStore:                        #
-    #   - Luu TOAN BO parent documents vao 1 file .db duy nhat            #
-    #   - Khong can tao thu muc, khong co hang nghin file nho              #
-    #   - De upload len Kaggle Dataset hon nhieu                           #
-    # ------------------------------------------------------------------ #
     byte_store = SQLiteByteStore(parent_db_path)
     print(f"Parent docstore: {parent_db_path} (SQLite)")
 

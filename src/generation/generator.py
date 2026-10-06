@@ -113,7 +113,15 @@ def rewrite_query(query: str, llm)-> str:
     Original question: {query}
     Financial keywords:"""
     response= llm.invoke(rewrite_prompt.format(query= query))
-    keyword= response.content
+    raw = response.content
+    # gemini-3.5-flash-lite có thể trả về list[dict] thay vì plain string
+    if isinstance(raw, list):
+        keyword = "".join(
+            p.get("text", "") if isinstance(p, dict) else str(p)
+            for p in raw
+        ).strip()
+    else:
+        keyword = str(raw).strip()
     return f"{query}. Finance keywords:{keyword}" if keyword else query
 
 
@@ -123,13 +131,14 @@ def _build_prompt_and_retrieve(query: str, vector_store_path: str="data/vector_s
     print("Dang tim cau tra loi...")
     qwen_model, base_compressor, llm, ensemble_retriever = get_resource(vector_store_path, doc_store_path)
     metadata_filter= extract_filter(query, qwen_model)
-    target_company= metadata_filter.get("company", "").upper()
+    target_company= re.sub(r"\s+", "", metadata_filter.get("company", "")).upper()
     tar_year= str(metadata_filter.get("year", ""))
     target_year= re.sub(r"\D", "", tar_year)
     print(f"target company: {target_company}")
     print(f"target year: {target_year}")
     print(f"Metadata filter: company={target_company}, year={target_year}")
     new_query= rewrite_query(query, llm)
+    print(f"new query: {new_query}")
     raw_doc = ensemble_retriever.invoke(new_query)
     filtered_docs = []
     for doc in raw_doc:
@@ -137,7 +146,7 @@ def _build_prompt_and_retrieve(query: str, vector_store_path: str="data/vector_s
         parts= source_name.split("_")
         if len(parts)>=2:
             name_company= parts[0].upper()
-            doc_year= parts[1]
+            doc_year= re.sub(r"\D", "", parts[1])[:4]
         else:
             name_company= source_name.upper()
             doc_year= ""
@@ -189,7 +198,7 @@ def _build_prompt_and_retrieve(query: str, vector_store_path: str="data/vector_s
            Giải thích và phân tích: viết bằng tiếng Việt chuyên nghiệp.
         6. Nếu không tìm thấy thông tin trong context, hãy nói thẳng thay vì bịa.
         7. Báo cáo tài chính thường chứa dữ liệu so sánh của nhiều năm (ví dụ 2022, 2021, 2020). Bạn phải KIỂM TRA ĐỐI CHIẾU CHÍNH XÁC NĂM ĐƯỢC YÊU CẦU. Nếu người dùng hỏi năm 2022, tuyệt đối không lấy lý do hoặc số liệu của năm 2021 để trả lời.
-
+        8. Bạn phải phân tích câu hỏi xem nó thuộc loại nào nếu là câu hỏi tính toán thì hãy xác. Nếu không có đủ thành phần số liệu thì phải nói rõ là không đủ thành phần nào do đâu và tuyệt đối không bịa dữ liệu để tính
         CÂU HỎI HIỆN TẠI: {query}"""
     )
     final_prompt = prompt_template.format(
@@ -206,45 +215,60 @@ def answer_query_eval(query: str, vector_store_path: str="data/vector_store/fina
     """
     Dùng cho evaluation: trả về (rag_answer, context_docs, context_str) — KHÔNG phải generator.
     Memory bị TẮT hoàn toàn trong eval mode để tránh nhiễu giữa các câu hỏi độc lập.
+    Pipeline retrieval giống hệt _build_prompt_and_retrieve: extract_filter → rewrite_query → retrieve.
     """
     print("Dang tim cau tra loi...")
-    qwen_model, base_compressor, llm, ensemble_retriever = get_resource(vector_store_path,doc_store_path)
-    new_query= rewrite_query(query, llm)
-    metadata_filter= extract_filter(query, qwen_model)
-    target_company= metadata_filter.get("company", "").upper()
-    target_year= metadata_filter.get("year", "")
-    raw_doc= ensemble_retriever.invoke(new_query)
-    filtered_docs=[]
+    qwen_model, base_compressor, llm, ensemble_retriever = get_resource(vector_store_path, doc_store_path)
+    # ── Bước 1: extract filter (giống _build_prompt_and_retrieve) ──
+    metadata_filter = extract_filter(query, qwen_model)
+    target_company  = re.sub(r"\s+", "", metadata_filter.get("company", "")).upper()
+    tar_year        = str(metadata_filter.get("year", ""))
+    target_year     = re.sub(r"\D", "", tar_year)[:4]
+    print(f"target company: {target_company}")
+    print(f"target year: {target_year}")
+    print(f"Metadata filter: company={target_company}, year={target_year}")
+    # Fallback: nếu LLM không extract được year, tự tìm bằng regex trên query gốc
+    if not target_year:
+        year_match  = re.search(r'\b(20\d{2})\b', query)
+        target_year = year_match.group(1) if year_match else ""
+        if target_year:
+            print(f"[fallback] year từ regex: {target_year}")
+    # ── Bước 2: rewrite query ──
+    new_query = rewrite_query(query, llm)
+    print(f"new query: {new_query}")
+    # ── Bước 3: retrieve + filter ──
+    raw_doc = ensemble_retriever.invoke(new_query)
+    filtered_docs = []
     for doc in raw_doc:
-        sour= doc.metadata.get("source", "")
-        parts= sour.split("_")
-        if len(parts)>=2:
-            doc_company= parts[0].upper()
-            doc_year= parts[1]
+        source_name = str(doc.metadata.get("source", ""))
+        parts       = source_name.split("_")
+        if len(parts) >= 2:
+            doc_company = parts[0].upper()
+            doc_year    = re.sub(r"\D", "", parts[1])[:4]
         else:
-            doc_company= sour
-            doc_year= ""
-        is_val= True
-        if target_company and doc_company!= target_company:
-            is_val=False
-        if target_year and doc_year!= target_year:
-            is_val= False
-        if is_val:
+            doc_company = source_name.upper()
+            doc_year    = ""
+        is_valid = True
+        if target_company and doc_company != target_company:
+            is_valid = False
+        if target_year and doc_year != target_year:
+            is_valid = False
+        if is_valid:
             filtered_docs.append(doc)
-    print(f"da loc va giu lai {len(filtered_docs)}/{len(raw_doc)}")
+    print(f"đã lọc thành công giữ lại {len(filtered_docs)}/{len(raw_doc)}")
     if filtered_docs:
-        results= base_compressor.compress_documents(filtered_docs, new_query)
+        results = base_compressor.compress_documents(filtered_docs, new_query)
     else:
-        results= base_compressor.compress_documents(raw_doc, new_query)
+        results = base_compressor.compress_documents(raw_doc, new_query)
     if not results:
-        print( "Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu.")
-        return "không có tài liệu nào liên quan",[],""
+        print("Không tìm thấy tài liệu liên quan đến câu hỏi này trong cơ sở dữ liệu.")
+        return "không có tài liệu nào liên quan", [], ""
 
     context_str = "\n\n".join([
         f"source: {doc.metadata.get('source')} - page: {doc.metadata.get('page_number')}:\n{doc.page_content}"
         for doc in results
     ])
-    print("context: {context_str}")
+    print(f"context: {context_str[:100]}")
 
     # Prompt đơn giản hơn cho eval — không có memory noise
     eval_prompt_template = PromptTemplate(
@@ -320,7 +344,7 @@ if __name__ == "__main__":
     query = (
         sys.argv[1]
         if len(sys.argv) > 1
-        else "Does Adobe have an improving Free cashflow conversion as of FY2022? answer in VietNamese"
+        else "What is the FY2017 - FY2019 3 year average of capex as a % of revenue for Activision Blizzard? Answer in units of percents and round to one decimal place. Calculate (or extract) the answer from the statement of income and the cash flow statement. Answer in Vietnamese, please."
     )
     for token in answer_query(query):
         print(token, end="", flush=True)

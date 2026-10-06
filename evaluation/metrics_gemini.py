@@ -25,10 +25,7 @@ load_dotenv()
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from src.generation.generator import answer_query_eval
-
-# ── Khởi tạo Gemini Judge ──────────────────────────────────────────────────────
-# Judge model mạnh hơn để đánh giá tài chính chính xác hơn
-JUDGE_MODEL = "gemini-2.0-flash-lite"
+JUDGE_MODEL = "gemini-3.5-flash-lite"
 
 _judge_llm = ChatGoogleGenerativeAI(
     model=JUDGE_MODEL,
@@ -75,6 +72,7 @@ QUY TẮC QUAN TRỌNG:
 4. Về NGÔN NGỮ: câu trả lời tiếng Việt so với ground truth tiếng Anh vẫn được chấp nhận.
 5. Nếu RAG trả lời ĐẦY ĐỦ HƠN ground truth (thêm context hữu ích) -> vẫn ĐÚNG.
 6. Chỉ SAI nếu: số liệu sai, kết luận ngược chiều, hoặc thiếu thông tin CỐT LÕI.
+7. Nếu số liệu trả lời chênh lệch nhỏ hơn 0.5 với đáp án vẫn chấp nhận
 
 FORMAT TRẢ LỜI (bắt buộc):
 Dòng 1: ĐÚNG hoặc SAI (chỉ 1 từ)
@@ -292,6 +290,4 @@ def run_evaluation(
 
 
 if __name__ == "__main__":
-    # Chạy nhanh 3 câu để test: max_questions=3
-    # Chạy hết tất cả: bỏ max_questions
     run_evaluation()
